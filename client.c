@@ -10,7 +10,7 @@
 int main(int argc, char *argv[]) {
     int sock = 0;
     struct sockaddr_in serv_addr;
-    char *message = "123456789123456789";
+    char message[1024] = {0};
     char buffer[1024] = {0};
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    scanf("%s", message);
     send(sock, message, strlen(message), 0);
-    printf("Message Sent\n");
     read(sock, buffer, 1024);
     printf("%s\n", buffer);
     return 0;

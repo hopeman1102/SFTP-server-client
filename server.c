@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in serv_addr, cli_addr;
     int cli_addr_len = sizeof(cli_addr);
     char buffer[1024] = {0};
-    char *message = "HELLO";
+    char *message;
     
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -41,10 +41,11 @@ int main(int argc, char *argv[]) {
        exit(1);
     }
 
-    read_val = read(client_fd, buffer, 1024);
+    read_val = read(client_fd, buffer, 1025);
     printf("%s\n", buffer);
-    send(client_fd, message, strlen(message), 0);
-    printf("Message Sent");
+    message = strcat(buffer, ", wassap");
+    send(client_fd, buffer, strlen(buffer), 0);
+    printf("Message Sent\n");
 
     return 0;
 }    
