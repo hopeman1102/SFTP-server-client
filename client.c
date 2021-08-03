@@ -33,9 +33,19 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    scanf("%s", message);
-    send(sock, message, strlen(message), 0);
-    read(sock, buffer, 1024);
-    printf("%s\n", buffer);
+    while (1) {
+        scanf("%s", message);
+        send(sock, message, strlen(message), 0);
+        read(sock, buffer, 1024);
+        if (strcmp("DONE", message) == 0 && strcmp("+", buffer) == 0) {
+            if (close(sock) < 0) {
+                perror("DONE command failed");
+                exit(1);
+            }
+        }
+        printf("%s\n", buffer);
+        memset(message, 0, sizeof(message));
+        memset(buffer, 0, sizeof(buffer));
+    }
     return 0;
 }
