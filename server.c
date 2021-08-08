@@ -7,7 +7,7 @@
 #include <string.h>
 #define PORT 8080
 
-int getPassword(char userID[], char** userPass) {
+int getPassword(char userID[], char* userPass) {
     FILE *fp = fopen("data.csv", "r");
     if (!fp) {
         perror("Can't open file");
@@ -21,9 +21,8 @@ int getPassword(char userID[], char** userPass) {
             char* val = strtok(line, ", ");
             if (strcmp(userID, val) == 0) {
                 val = strtok(NULL, ", ");
-                val[strcspn(val, "\n")] = 0;
-                *userPass = malloc(strlen(val) + 1);
-                strcpy(*userPass, val);
+                val[strcspn(val, "\n")] = 0; // remove "\n" if exists
+                strcpy(userPass, val);
                 fclose(fp);
                 return 0;
             }
@@ -37,9 +36,9 @@ int main(int argc, char *argv[]) {
 
 
     //---------------------------------
-    char* userID = "user2";
-    char* userPass = NULL;
-    int temp = getPassword(userID, &userPass);
+    char* userID = "user1";
+    char userPass[1024] = {0};
+    int temp = getPassword(userID, userPass);
     printf("password: %s\n", userPass);
     //---------------------------------
 
@@ -102,7 +101,5 @@ int main(int argc, char *argv[]) {
             printf("Message Sent\n");
         }
     }
-
-    free(userPass);
     return 0;
 }    
