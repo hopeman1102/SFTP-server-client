@@ -7,14 +7,49 @@
 #include <string.h>
 #define PORT 8080
 
+int getPassword(char userID[], char** userPass) {
+    FILE *fp = fopen("data.csv", "r");
+    if (!fp) {
+        perror("Can't open file");
+        exit(1);
+    } else {
+        char line[1024];
+        int row = 0;
+        int col = 0;
+
+        while (fgets(line, 1024, fp)) {
+            char* val = strtok(line, ", ");
+            if (strcmp(userID, val) == 0) {
+                val = strtok(NULL, ", ");
+                val[strcspn(val, "\n")] = 0;
+                *userPass = malloc(strlen(val) + 1);
+                strcpy(*userPass, val);
+                fclose(fp);
+                return 0;
+            }
+        }
+        fclose(fp);
+        return 1;
+    }
+}
+
 int main(int argc, char *argv[]) {
+
+
+    //---------------------------------
+    char* userID = "user2";
+    char* userPass = NULL;
+    int temp = getPassword(userID, &userPass);
+    printf("password: %s\n", userPass);
+    //---------------------------------
+
     int server_fd, client_fd, read_val;
     struct sockaddr_in serv_addr, cli_addr;
     int cli_addr_len = sizeof(cli_addr);
     char buffer[1024] = {0};
     char message[1024] = {0};
     bool isClosed = true;
-    
+        
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server_fd == 0) {
@@ -67,5 +102,7 @@ int main(int argc, char *argv[]) {
             printf("Message Sent\n");
         }
     }
+
+    free(userPass);
     return 0;
 }    
