@@ -1,0 +1,2 @@
+gcc ../server/server.c -o ../bin/server
+gcc ../client/client.c -o ../bin/client
