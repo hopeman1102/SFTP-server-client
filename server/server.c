@@ -5,26 +5,30 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include "sqlite/sqlite3.h"
 #include "database.h"
 #define PORT 8080
 
 int main(int argc, char *argv[]) {
 
-
-    //---------------------------------
-    char* userID = "user1";
-    char userPass[1024] = {0};
-    int temp = getPassword(userID, userPass);
-    printf("password: %s\n", userPass);
-    //---------------------------------
-
+    // database setup
+    sqlite3* db;
+    sqlite3_stmt* smt;
+    char* db_err;
+    sqlite3_open("users.db", &db);
+    int res = sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS users(id varchar(512), pass varchar(512));", NULL, NULL, &db_err);
+    if (res != SQLITE_OK) {
+        printf("error: %s\n", db_err);
+    }
+ 
+    // server setup
     int server_fd, client_fd, read_val;
     struct sockaddr_in serv_addr, cli_addr;
     int cli_addr_len = sizeof(cli_addr);
     char buffer[1024] = {0};
     char message[1024] = {0};
-    bool isClosed = true;
-        
+    bool is_closed = true;
+       
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server_fd == 0) {
@@ -42,7 +46,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (1) {
-        if (isClosed) {
+        if (is_closed) {
             if (listen(server_fd, 5) < 0) {
                 perror("Listen Failed");
                 exit(1);
@@ -54,7 +58,7 @@ int main(int argc, char *argv[]) {
                 perror("Failed Accept");
                 exit(1);
             }
-            isClosed = false;
+            is_closed = false;
         }
 
         read(client_fd, buffer, 1024);
@@ -68,7 +72,7 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             printf("Connection Closed\n");
-            isClosed = true;
+            is_closed = true;
         } else {
             printf("%s\n", buffer);
             strcat(buffer, ", wassap");
