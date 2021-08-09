@@ -6,8 +6,9 @@
 #include <unistd.h>
 #include <string.h>
 #include "sqlite/sqlite3.h"
+#include "sftp.h"
 #include "database.h"
-#define PORT 8080
+#include "macros.h"
 
 int main(int argc, char *argv[]) {
 
@@ -25,8 +26,8 @@ int main(int argc, char *argv[]) {
     int server_fd, client_fd, read_val;
     struct sockaddr_in serv_addr, cli_addr;
     int cli_addr_len = sizeof(cli_addr);
-    char buffer[1024] = {0};
-    char message[1024] = {0};
+    char buffer[BUFFER_SIZE] = {0};
+    char message[BUFFER_SIZE] = {0};
     bool is_closed = true;
        
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -61,23 +62,14 @@ int main(int argc, char *argv[]) {
             is_closed = false;
         }
 
-        read(client_fd, buffer, 1024);
+        read(client_fd, buffer, BUFFER_SIZE);
         if (strcmp("DONE", buffer) == 0) {
-            strcpy(message, "+");
-            send(client_fd, message, strlen(message), 0);
-            memset(message, 0, sizeof(message));
-            memset(buffer, 0, sizeof(buffer));
-            if (close(client_fd) < 0) {
-                perror("Failed DONE command for client_fd");
-                exit(1);
-            }
-            printf("Connection Closed\n");
-            is_closed = true;
+            done(client_fd, &message, &buffer, &is_closed);
         } else {
             printf("%s\n", buffer);
             strcat(buffer, ", wassap");
             send(client_fd, buffer, strlen(buffer), 0);
-            memset(buffer, 0, sizeof(buffer));
+            memset(buffer, 0, BUFFER_SIZE);
             printf("Message Sent\n");
         }
     }
