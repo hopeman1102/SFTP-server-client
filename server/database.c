@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int getPassword(char userID[], char* userPass) {
     FILE *fp = fopen("data.csv", "r");
