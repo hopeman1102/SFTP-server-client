@@ -96,9 +96,7 @@ int main(int argc, char *argv[]) {
             user(client_fd, db, stmt, message, buffer);
         } 
         else {
-            printf("buffer: %s\n", buffer);
             strcat(buffer, ", wassap");
-            printf("buffer2: %s\n", buffer);
             send(client_fd, buffer, strlen(buffer), 0);
             memset(buffer, 0, BUFFER_SIZE);
             printf("Message Sent\n");

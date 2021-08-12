@@ -25,7 +25,6 @@ void user(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* b
 	char temp[BUFFER_SIZE] = {0};
 	char* user_id = strtok(buffer, " ");
 	user_id = strtok(NULL, " ");
-	user_id[strcspn(user_id, "\n")] = 0; // removing the \n if exists
 
 	char query[512];
 	sprintf(query, "select id, acc, pass from users where id = '%s';", user_id);
@@ -35,4 +34,14 @@ void user(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* b
 	sqlite3_step(stmt);
 	acc = sqlite3_column_text(stmt, 1);
 	printf("acc: %s\n", acc);
+	if (acc != NULL) {
+		strcpy(message, "+");
+		send(client_fd, message, strlen(message), 0);
+	}
+	else {
+		strcpy(message, "-");
+		send(client_fd, message, strlen(message), 0);
+	}
+	memset(message, 0, BUFFER_SIZE);
+	memset(buffer, 0, BUFFER_SIZE);
 }

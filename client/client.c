@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         fgets(message, BUFFER_SIZE, stdin);
+        message[strcspn(message, "\n")] = 0; // removing the \n if exists
         send(sock, message, strlen(message), 0);
         read(sock, buffer, 1024);
         if (strcmp("DONE", message) == 0 && strcmp("+", buffer) == 0) {
