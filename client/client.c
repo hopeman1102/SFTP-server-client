@@ -5,13 +5,13 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
-#define PORT 8080
+#include "global.h"
 
 int main(int argc, char *argv[]) {
     int sock = 0;
     struct sockaddr_in serv_addr;
-    char message[1024] = {0};
-    char buffer[1024] = {0};
+    char message[BUFFER_SIZE] = {0};
+    char buffer[BUFFER_SIZE] = {0};
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (1) {
-        scanf("%s", message);
+        fgets(message, BUFFER_SIZE, stdin);
         send(sock, message, strlen(message), 0);
         read(sock, buffer, 1024);
         if (strcmp("DONE", message) == 0 && strcmp("+", buffer) == 0) {

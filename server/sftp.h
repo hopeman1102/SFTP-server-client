@@ -7,6 +7,8 @@
  * @param buffer - string that stores the message recieved
  * @param is_closed - boolean used to check if the server was closed
  */
-void done(int, char(*)[1024], char(*)[1024], bool*);
+void done(int, char*, char*, bool*);
+
+void user(int, sqlite3*, sqlite3_stmt*, char*, char*);
 
 #endif
