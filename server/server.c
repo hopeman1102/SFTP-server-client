@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
             strcpy(message, "+CS725 SFTP Service");
             send(client_fd, message, BUFFER_SIZE, 0);
             memset(message, 0, BUFFER_SIZE);
+            printf("Connection established with client\n");
 
             is_closed = false;
         }
@@ -81,6 +82,7 @@ int main(int argc, char *argv[]) {
         memset(temp, 0, BUFFER_SIZE);
         
         read(client_fd, buffer, BUFFER_SIZE);
+        printf("command recieved: %s\n", buffer);
 
         strncpy(temp, buffer, 4);
         temp[4] = 0;
@@ -90,7 +92,10 @@ int main(int argc, char *argv[]) {
         } 
         else if(strcmp("USER", temp) == 0) {
             user(client_fd, db, stmt, message, buffer);
-        } 
+        }
+        else if(strcmp("ACCT", temp) == 0) {
+            u_acct(client_fd, db, stmt, message, buffer);
+        }
         else {
             strcat(buffer, ", wassap");
             send(client_fd, buffer, BUFFER_SIZE, 0);
