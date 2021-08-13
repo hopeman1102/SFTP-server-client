@@ -28,18 +28,19 @@ void user(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* b
 
 	char query[512];
 	sprintf(query, "select id, acc, pass from users where id = '%s';", user_id);
-	printf("query: %s\n", query);
 	sqlite3_prepare_v2(db, query, -1, &stmt, 0);
-	const unsigned char* acc;
+	const unsigned char* id_temp;
 	sqlite3_step(stmt);
-	acc = sqlite3_column_text(stmt, 1);
-	printf("acc: %s\n", acc);
-	if (acc != NULL) {
-		strcpy(message, "+");
+	id_temp = sqlite3_column_text(stmt, 0);
+	if (id_temp != NULL) {
+		user_state.idVerified = true;
+		strcpy(user_info.userId, (char*) id_temp);
+		sprintf(message, "+%s ok, send account and password", user_info.userId);
 		send(client_fd, message, strlen(message), 0);
 	}
 	else {
-		strcpy(message, "-");
+		strcpy(user_info.userId, (char*) id_temp);
+		sprintf(message, "-%s user id not found", user_info.userId);
 		send(client_fd, message, strlen(message), 0);
 	}
 	memset(message, 0, BUFFER_SIZE);

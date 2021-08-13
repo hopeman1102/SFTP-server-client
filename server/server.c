@@ -22,13 +22,6 @@ int main(int argc, char *argv[]) {
         printf("error: %s\n", db_err);
     }
 
-    // char query[512];
-    // sprintf(query, "insert into users VALUES ('user2', 'u2acc2', 'pass123')");
-    // res = sqlite3_exec(db, query, NULL, NULL, &db_err);
-    // if (res != SQLITE_OK) {
-    //     printf("error: %s\n", db_err);
-    // }
- 
     // server setup
     int server_fd, client_fd, read_val;
     struct sockaddr_in serv_addr, cli_addr;
@@ -77,6 +70,11 @@ int main(int argc, char *argv[]) {
                 perror("Failed Accept");
                 exit(1);
             }
+
+            strcpy(message, "+CS725 SFTP Service");
+            send(client_fd, message, BUFFER_SIZE, 0);
+            memset(message, 0, BUFFER_SIZE);
+
             is_closed = false;
         }
 
@@ -91,15 +89,12 @@ int main(int argc, char *argv[]) {
             done(client_fd, message, buffer, &is_closed);
         } 
         else if(strcmp("USER", temp) == 0) {
-            printf("user: %s\n", temp);
-            printf("buffer: %s\n", buffer);
             user(client_fd, db, stmt, message, buffer);
         } 
         else {
             strcat(buffer, ", wassap");
-            send(client_fd, buffer, strlen(buffer), 0);
+            send(client_fd, buffer, BUFFER_SIZE, 0);
             memset(buffer, 0, BUFFER_SIZE);
-            printf("Message Sent\n");
         }
     }
     return 0;

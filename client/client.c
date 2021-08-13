@@ -33,6 +33,9 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    read(sock, buffer, 1024);
+    printf("%s\n", buffer);
+
     while (1) {
         fgets(message, BUFFER_SIZE, stdin);
         message[strcspn(message, "\n")] = 0; // removing the \n if exists
