@@ -39,8 +39,38 @@ void user(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* b
 		send(client_fd, message, strlen(message), 0);
 	}
 	else {
-		strcpy(user_info.userId, (char*) id_temp);
-		sprintf(message, "-%s user id not found", user_info.userId);
+		sprintf(message, "-%s user id not found", user_id);
+		send(client_fd, message, strlen(message), 0);
+	}
+	memset(message, 0, BUFFER_SIZE);
+	memset(buffer, 0, BUFFER_SIZE);
+}
+
+void u_acct(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* buffer) {
+	char temp[BUFFER_SIZE] = {0};
+	char* user_acct = strtok(buffer, " ");
+	user_acct = strtok(NULL, " ");
+
+	char query[512];
+	sprintf(query, "select id, acc, pass from users where id = '%s' AND acc = '%s';", user_info.userId, user_acct);
+	sqlite3_prepare_v2(db, query, -1, &stmt, 0);
+	const unsigned char* acc_temp;
+	sqlite3_step(stmt);
+	acc_temp = sqlite3_column_text(stmt, 1);
+	if (acc_temp != NULL) {
+		user_state.accVerified = true;
+		strcpy(user_info.userAcc, (char*) acc_temp);
+		if (user_state.passVerified) {
+			user_state.isLoggedIn = true;
+			sprintf(message, "!%s logged in", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		} else {
+			sprintf(message, "+%s account verified, send password", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		}
+	}
+	else {
+		sprintf(message, "-%s invalid account", user_acct);
 		send(client_fd, message, strlen(message), 0);
 	}
 	memset(message, 0, BUFFER_SIZE);

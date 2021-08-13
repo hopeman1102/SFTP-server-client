@@ -11,4 +11,6 @@ void done(int, char*, char*, bool*);
 
 void user(int, sqlite3*, sqlite3_stmt*, char*, char*);
 
+void u_acct(int, sqlite3*, sqlite3_stmt*, char*, char*);
+
 #endif
