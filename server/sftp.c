@@ -76,3 +76,33 @@ void u_acct(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char*
 	memset(message, 0, BUFFER_SIZE);
 	memset(buffer, 0, BUFFER_SIZE);
 }
+
+void pass(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* buffer) {
+	char temp[BUFFER_SIZE] = {0};
+	char* user_pass = strtok(buffer, " ");
+	user_pass = strtok(NULL, " ");
+
+	char query[512];
+	sprintf(query, "select id, acc, pass from users where id = '%s' AND pass = '%s';", user_info.userId, user_pass);
+	sqlite3_prepare_v2(db, query, -1, &stmt, 0);
+	const unsigned char* pass_temp;
+	sqlite3_step(stmt);
+	pass_temp = sqlite3_column_text(stmt, 2);
+	if (pass_temp != NULL) {
+		user_state.passVerified = true;
+		if (user_state.accVerified) {
+			user_state.isLoggedIn = true;
+			sprintf(message, "!%s logged in", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		} else {
+			sprintf(message, "+%s password verified, send account", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		}
+	}
+	else {
+		sprintf(message, "-invalid password");
+		send(client_fd, message, strlen(message), 0);
+	}
+	memset(message, 0, BUFFER_SIZE);
+	memset(buffer, 0, BUFFER_SIZE);
+}

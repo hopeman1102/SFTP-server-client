@@ -13,4 +13,6 @@ void user(int, sqlite3*, sqlite3_stmt*, char*, char*);
 
 void u_acct(int, sqlite3*, sqlite3_stmt*, char*, char*);
 
+void pass(int, sqlite3*, sqlite3_stmt*, char*, char*);
+
 #endif

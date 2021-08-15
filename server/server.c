@@ -96,10 +96,14 @@ int main(int argc, char *argv[]) {
         else if(strcmp("ACCT", temp) == 0) {
             u_acct(client_fd, db, stmt, message, buffer);
         }
+        else if(strcmp("PASS", temp) == 0) {
+            pass(client_fd, db, stmt, message, buffer);
+        }
         else {
-            strcat(buffer, ", wassap");
-            send(client_fd, buffer, BUFFER_SIZE, 0);
+            strcat(message, "-Invalid Command");
+            send(client_fd, message, BUFFER_SIZE, 0);
             memset(buffer, 0, BUFFER_SIZE);
+            memset(message, 0, BUFFER_SIZE);
         }
     }
     return 0;
