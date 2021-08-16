@@ -15,4 +15,9 @@ void u_acct(int, sqlite3*, sqlite3_stmt*, char*, char*);
 
 void pass(int, sqlite3*, sqlite3_stmt*, char*, char*);
 
+/*
+ * returns 1 in case of an error, returns 0 for success
+ */
+int type(int, char*, char*);
+
 #endif

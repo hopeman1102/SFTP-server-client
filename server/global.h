@@ -22,5 +22,6 @@ struct User_info
 
 struct User_info user_info;
 
+char transfer_type;
 
 #endif

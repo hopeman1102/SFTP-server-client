@@ -90,14 +90,17 @@ int main(int argc, char *argv[]) {
         if (strcmp("DONE", temp) == 0) {
             done(client_fd, message, buffer, &is_closed);
         } 
-        else if(strcmp("USER", temp) == 0) {
+        else if (strcmp("USER", temp) == 0) {
             user(client_fd, db, stmt, message, buffer);
         }
-        else if(strcmp("ACCT", temp) == 0) {
+        else if (strcmp("ACCT", temp) == 0) {
             u_acct(client_fd, db, stmt, message, buffer);
         }
-        else if(strcmp("PASS", temp) == 0) {
+        else if (strcmp("PASS", temp) == 0) {
             pass(client_fd, db, stmt, message, buffer);
+        }
+        else if (strcmp("TYPE", temp) == 0) {
+            type(client_fd, message, buffer);
         }
         else {
             strcat(message, "-Invalid Command");

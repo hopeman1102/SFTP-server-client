@@ -8,11 +8,15 @@
 #include "sqlite/sqlite3.h"
 #include "global.h"
 
+void clear_buffers(char* message, char* buffer) {
+	memset(message, 0, BUFFER_SIZE);
+	memset(buffer, 0, BUFFER_SIZE);	
+}
+
 void done(int client_fd, char* message, char* buffer, bool* is_closed) {
 	strcpy(message, "+");
 	send(client_fd, message, strlen(message), 0);
-	memset(message, 0, BUFFER_SIZE);
-	memset(buffer, 0, BUFFER_SIZE);
+	clear_buffers(message, buffer);
 	if (close(client_fd) < 0) {
 		perror("Failed DONE command for client_fd");
 		exit(1);
@@ -22,7 +26,6 @@ void done(int client_fd, char* message, char* buffer, bool* is_closed) {
 }
 
 void user(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* buffer) {
-	char temp[BUFFER_SIZE] = {0};
 	char* user_id = strtok(buffer, " ");
 	user_id = strtok(NULL, " ");
 
@@ -42,12 +45,10 @@ void user(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* b
 		sprintf(message, "-%s user id not found", user_id);
 		send(client_fd, message, strlen(message), 0);
 	}
-	memset(message, 0, BUFFER_SIZE);
-	memset(buffer, 0, BUFFER_SIZE);
+	clear_buffers(message, buffer);
 }
 
 void u_acct(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* buffer) {
-	char temp[BUFFER_SIZE] = {0};
 	char* user_acct = strtok(buffer, " ");
 	user_acct = strtok(NULL, " ");
 
@@ -73,12 +74,10 @@ void u_acct(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char*
 		sprintf(message, "-%s invalid account", user_acct);
 		send(client_fd, message, strlen(message), 0);
 	}
-	memset(message, 0, BUFFER_SIZE);
-	memset(buffer, 0, BUFFER_SIZE);
+	clear_buffers(message, buffer);
 }
 
 void pass(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* buffer) {
-	char temp[BUFFER_SIZE] = {0};
 	char* user_pass = strtok(buffer, " ");
 	user_pass = strtok(NULL, " ");
 
@@ -103,6 +102,36 @@ void pass(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* b
 		sprintf(message, "-invalid password");
 		send(client_fd, message, strlen(message), 0);
 	}
-	memset(message, 0, BUFFER_SIZE);
-	memset(buffer, 0, BUFFER_SIZE);
+	clear_buffers(message, buffer);
+}
+
+int type(int client_fd, char* message, char* buffer) {
+	if (!user_state.isLoggedIn) {
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return 1;
+	}
+
+	char* type = strtok(buffer, " ");
+	type = strtok(NULL, " ");
+	
+	if (strcmp("A", type) == 0) {
+		transfer_type = 'A';
+		strcpy(message, "+Using Ascii mode");
+	}
+	else if (strcmp("B", type) == 0) {
+		transfer_type = 'B';
+		strcpy(message, "+Using Binary mode");
+	}
+	else if (strcmp("C", type) == 0) {
+		transfer_type = 'C';
+		strcpy(message, "+Using Continuous mode");
+	}
+	else {
+		strcpy(message, "-Type not valid");
+	}
+	send(client_fd, message, strlen(message), 0);
+	clear_buffers(message, buffer);
+	return 0;
 }
