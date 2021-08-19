@@ -23,6 +23,12 @@ void done(int client_fd, char* message, char* buffer, bool* is_closed) {
 	}
 	printf("Connection Closed\n");
 	*is_closed = true;
+	user_state.accVerified = false;
+  user_state.idVerified = false;
+	user_state.isLoggedIn = false;
+	user_state.passVerified = false;
+	strcpy(user_info.userId, "");
+	strcpy(user_info.userAcc, "");
 }
 
 void user(int client_fd, sqlite3* db, sqlite3_stmt* stmt, char* message, char* buffer) {
