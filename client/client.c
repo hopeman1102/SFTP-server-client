@@ -1,11 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "global.h"
+
+bool is_file_present(char* file_name){
+    struct stat buffer;
+    char file_addr[BUFFER_SIZE] = {0};
+	sprintf(file_addr, "transfer_files/%s", file_name);
+    int exist = stat(file_addr, &buffer);
+    if (exist == 0)
+        return true;
+    else  
+        return false;
+}
 
 int main(int argc, char *argv[])
 {
@@ -51,7 +64,7 @@ int main(int argc, char *argv[])
         temp[4] = 0;
         if (strcmp("STOR", temp) == 0)
         {
-            char *temp_message;
+            char temp_message[BUFFER_SIZE] = {0};
             strcpy(temp_message, message);
             char *file_name = strtok(temp_message, " ");
             file_name = strtok(NULL, " ");
@@ -63,13 +76,8 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            // check here if file exits
-            char file_addr[BUFFER_SIZE] = {0};
-            sprintf(file_addr, "transfer_files/%s", file_name);
-            fp = fopen(file_addr, "r");
-            if (fp)
+            if (is_file_present(file_name))
             {
-                fclose(fp); // might remove this if i can send this
                 send(sock, message, strlen(message), 0);
                 read(sock, buffer, 1024);
             }

@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "sqlite/sqlite3.h"
 #include "global.h"
 
@@ -14,18 +15,15 @@ void clear_buffers(char *message, char *buffer)
 	memset(buffer, 0, BUFFER_SIZE);
 }
 
-bool is_file_present(char *file_name)
-{
-	FILE *fp;
-	char file_addr[BUFFER_SIZE] = {0};
+bool is_file_present(char* file_name){
+    struct stat buffer;
+    char file_addr[BUFFER_SIZE] = {0};
 	sprintf(file_addr, "recieved_files/%s", file_name);
-	fp = fopen(file_addr, "r");
-	if (fp)
-	{
-		fclose(fp);
-		return true;
-	}
-	return false;
+    int exist = stat(file_addr, &buffer);
+    if (exist == 0)
+        return true;
+    else  
+        return false;
 }
 
 void reset_state()
