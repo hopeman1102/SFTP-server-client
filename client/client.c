@@ -75,7 +75,8 @@ int main(int argc, char *argv[])
             }
             else
             {
-                printf("err: specified file does not exist");
+                printf("err: specified file does not exist\n");
+                continue;
             }
         }
         else
