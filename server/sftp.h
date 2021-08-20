@@ -20,4 +20,10 @@ void pass(int, sqlite3*, sqlite3_stmt*, char*, char*);
  */
 int type(int, char*, char*);
 
+void stor(int, char*, char*);
+
+void size(int, char*, char*);
+
+void reset_state();
+
 #endif

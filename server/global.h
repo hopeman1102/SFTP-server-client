@@ -24,4 +24,12 @@ struct User_info user_info;
 
 char transfer_type;
 
+struct Stor_state
+{
+	int stor_type;
+	char file_name[BUFFER_SIZE];
+};
+
+struct Stor_state stor_state;
+
 #endif

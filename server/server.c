@@ -10,15 +10,17 @@
 #include "database.h"
 #include "global.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
     // database setup
-    sqlite3* db;
-    sqlite3_stmt* stmt;
-    char* db_err;
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    char *db_err;
     sqlite3_open("users.db", &db);
     int res = sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS users(id varchar(512), acc varchar(512), pass varchar(512));", NULL, NULL, &db_err);
-    if (res != SQLITE_OK) {
+    if (res != SQLITE_OK)
+    {
         printf("error: %s\n", db_err);
     }
 
@@ -33,17 +35,14 @@ int main(int argc, char *argv[]) {
 
     // initialising global variables
     struct User_state user_state;
-    user_state.accVerified = false;
-    user_state.idVerified = false;
-    user_state.isLoggedIn = false;
-    user_state.passVerified = false;
     struct User_info user_info;
-    strcpy(user_info.userId, "");
-    strcpy(user_info.userAcc, "");
+    struct Stor_state stor_state;
+    reset_state();
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (server_fd == 0) {
+    if (server_fd == 0)
+    {
         perror("Socket Failed");
         exit(1);
     }
@@ -52,21 +51,26 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_port = htons(PORT);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(server_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    if (bind(server_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    {
         perror("Bind Failed");
         exit(1);
     }
 
-    while (1) {
-        if (is_closed) {
-            if (listen(server_fd, 5) < 0) {
+    while (1)
+    {
+        if (is_closed)
+        {
+            if (listen(server_fd, 5) < 0)
+            {
                 perror("Listen Failed");
                 exit(1);
             }
 
             client_fd = accept(server_fd, (struct sockaddr *)&cli_addr, (socklen_t *)&cli_addr_len);
 
-            if (client_fd < 0) {
+            if (client_fd < 0)
+            {
                 perror("Failed Accept");
                 exit(1);
             }
@@ -80,34 +84,46 @@ int main(int argc, char *argv[]) {
         }
 
         memset(temp, 0, BUFFER_SIZE);
-        
+
         read(client_fd, buffer, BUFFER_SIZE);
         printf("command recieved: %s\n", buffer);
 
         strncpy(temp, buffer, 4);
         temp[4] = 0;
 
-        if (strcmp("DONE", temp) == 0) {
+        if (strcmp("DONE", temp) == 0)
+        {
             done(client_fd, message, buffer, &is_closed);
-        } 
-        else if (strcmp("USER", temp) == 0) {
+        }
+        else if (strcmp("USER", temp) == 0)
+        {
             user(client_fd, db, stmt, message, buffer);
         }
-        else if (strcmp("ACCT", temp) == 0) {
+        else if (strcmp("ACCT", temp) == 0)
+        {
             u_acct(client_fd, db, stmt, message, buffer);
         }
-        else if (strcmp("PASS", temp) == 0) {
+        else if (strcmp("PASS", temp) == 0)
+        {
             pass(client_fd, db, stmt, message, buffer);
         }
-        else if (strcmp("TYPE", temp) == 0) {
+        else if (strcmp("TYPE", temp) == 0)
+        {
             type(client_fd, message, buffer);
         }
-        else {
+        else if (strcmp("STOR", temp) == 0)
+        {
+            stor(client_fd, message, buffer);
+        }
+        else
+        {
             strcat(message, "-Invalid Command");
             send(client_fd, message, BUFFER_SIZE, 0);
             memset(buffer, 0, BUFFER_SIZE);
             memset(message, 0, BUFFER_SIZE);
         }
+        memset(buffer, 0, BUFFER_SIZE);
+        memset(message, 0, BUFFER_SIZE); 
     }
     return 0;
-}    
+}
