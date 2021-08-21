@@ -18,12 +18,33 @@ void clear_buffers(char *message, char *buffer)
 bool is_file_present(char* file_name){
     struct stat buffer;
     char file_addr[BUFFER_SIZE] = {0};
-	sprintf(file_addr, "recieved_files/%s", file_name);
+		sprintf(file_addr, "recieved_files/%s", file_name);
     int exist = stat(file_addr, &buffer);
     if (exist == 0)
         return true;
     else  
         return false;
+}
+
+void stor_file(int sockfd, int size){
+  int n;
+  FILE *fp;
+	char file_addr[BUFFER_SIZE] = {0};
+	sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
+  char buffer[BUFFER_SIZE];
+
+  fp = fopen(file_addr, "w");
+  while (1) {
+		// create global var for stor size
+    n = recv(sockfd, buffer, size, 0);
+    if (n <= 0){
+      break;
+      return;
+    }
+    fprintf(fp, "%s", buffer);
+    bzero(buffer, size);
+  }
+  return;
 }
 
 void reset_state()
@@ -234,5 +255,16 @@ void stor(int client_fd, char *message, char *buffer)
 
 void size(int client_fd, char *message, char *buffer)
 {
-	
+	// add check to make sure stor was run first
+	char* num_of_bytes_str = strtok(buffer, " ");
+	num_of_bytes_str = strtok(NULL, " ");
+	int num_of_bytes = atoi(num_of_bytes_str);
+
+	// add code for free space
+
+	strcpy(message, "+ok, waiting for file");
+	send(client_fd, message, strlen(message), 0);
+
+	stor_file(client_fd, num_of_bytes);
+	printf("Data written\n");
 }
