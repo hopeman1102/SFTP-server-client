@@ -120,7 +120,7 @@ void u_acct(int client_fd, sqlite3 *db, sqlite3_stmt *stmt, char *message, char 
 	char *user_acct = strtok(buffer, " ");
 	user_acct = strtok(NULL, " ");
 
-	char query[512];
+	char query[1024];
 	sprintf(query, "select id, acc, pass from users where id = '%s' AND acc = '%s';", user_info.userId, user_acct);
 	sqlite3_prepare_v2(db, query, -1, &stmt, 0);
 	const unsigned char *acc_temp;
@@ -155,7 +155,7 @@ void pass(int client_fd, sqlite3 *db, sqlite3_stmt *stmt, char *message, char *b
 	char *user_pass = strtok(buffer, " ");
 	user_pass = strtok(NULL, " ");
 
-	char query[512];
+	char query[1024];
 	sprintf(query, "select id, acc, pass from users where id = '%s' AND pass = '%s';", user_info.userId, user_pass);
 	sqlite3_prepare_v2(db, query, -1, &stmt, 0);
 	const unsigned char *pass_temp;
