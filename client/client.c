@@ -27,12 +27,9 @@ void send_file(FILE *fp, int sockfd, int size)
     int send_buffer_size = 1;
     char data[send_buffer_size+1];
     data[send_buffer_size] = 0;
-    printf("in send file client\n");
     int i = 0;
     for(int i = 0; i < size; i++) {
-        //fgets(data, send_buffer_size, fp);
         fread(data, 1, 1, fp);
-        printf("DATA: %s\n", data);
         if (send(sockfd, data, send_buffer_size, 0) == -1)
         {
             printf("err: error in sending file");
@@ -148,7 +145,6 @@ int main(int argc, char *argv[])
                     printf("err: problem with filename");
                     continue;
                 }
-                printf("before send file\n");
                 send_file(fp, sock, num_of_bytes);
                 read(sock, buffer, 1024);
             }

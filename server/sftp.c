@@ -55,9 +55,7 @@ void stor_file(int sockfd, int size)
 
 	for (int i = 0; i < size; i++)
 	{
-		printf("waiting in server\n");
 		n = recv(sockfd, buffer, stor_buffer_size, 0);
-		printf("BUFFER: %s\n", buffer);
 		if (n <= 0)
 		{
 			break;
@@ -66,7 +64,6 @@ void stor_file(int sockfd, int size)
 		fprintf(fp, "%s", buffer);
 		bzero(buffer, stor_buffer_size);
 	}
-	printf("closing\n");
 	fclose(fp);
 	return;
 }
@@ -292,7 +289,6 @@ void size(int client_fd, char *message, char *buffer)
 	clear_buffers(message, buffer);
 
 	stor_file(client_fd, num_of_bytes);
-	printf("HERE!!\n");
 
 	sprintf(message, "+Saved %s", stor_state.file_name);
 	send(client_fd, message, strlen(message), 0);
