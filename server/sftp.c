@@ -31,19 +31,34 @@ void stor_file(int sockfd, int size){
   FILE *fp;
 	char file_addr[BUFFER_SIZE] = {0};
 	sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
-  char buffer[BUFFER_SIZE];
+	int stor_buffer_size = 1;
+  char buffer[stor_buffer_size];
 
   fp = fopen(file_addr, "w");
-  while (1) {
-		// create global var for stor size
-    n = recv(sockfd, buffer, size, 0);
+  // while (1) {
+	// 	printf("waiting in server\n");
+  //   n = recv(sockfd, buffer, stor_buffer_size, 0);
+	// 	printf("BUFFER: %s\n", buffer);
+  //   if (n <= 0){
+  //     break;
+  //     return;
+  //   }
+  //   fprintf(fp, "%s", buffer);
+  //   bzero(buffer, stor_buffer_size);
+  // }
+	for (int i = 0; i < size; i++) {
+		printf("waiting in server\n");
+    n = recv(sockfd, buffer, stor_buffer_size, 0);
+		printf("BUFFER: %s", buffer);
     if (n <= 0){
       break;
       return;
     }
     fprintf(fp, "%s", buffer);
-    bzero(buffer, size);
-  }
+    bzero(buffer, stor_buffer_size);
+	}
+	printf("closing\n");
+	fclose(fp);
   return;
 }
 
@@ -265,6 +280,12 @@ void size(int client_fd, char *message, char *buffer)
 	strcpy(message, "+ok, waiting for file");
 	send(client_fd, message, strlen(message), 0);
 
+	clear_buffers(message, buffer);
+
 	stor_file(client_fd, num_of_bytes);
-	printf("Data written\n");
+	printf("HERE!!\n");
+
+	sprintf(message, "+Saved %s", stor_state.file_name);
+	send(client_fd, message, strlen(message), 0);
+	clear_buffers(message, buffer);
 }

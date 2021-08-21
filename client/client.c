@@ -21,16 +21,30 @@ bool is_file_present(char *file_name)
         return false;
 }
 
-void send_file(FILE *fp, int sockfd, int size){
-  int n;
-  char data[BUFFER_SIZE] = {0};
-
-  while(fgets(data, size, fp) != NULL) {
-    if (send(sockfd, data, sizeof(data), 0) == -1) {
-      printf("err: error in sending file");
+void send_file(FILE *fp, int sockfd, int size)
+{
+    int n;
+    int send_buffer_size = 1;
+    char data[send_buffer_size];
+    printf("in send file client\n");
+    //   while(fgets(data, BUFFER_SIZE, fp) != NULL) {
+    //     printf("hello\n");
+    //     if (send(sockfd, data, sizeof(data), 0) == -1) {
+    //       printf("err: error in sending file");
+    //     }
+    //     bzero(data, BUFFER_SIZE);
+    //   }
+    int i = 0;
+    for(int i = 0; i < size; i++) {
+        printf("hello\n");
+        //fgets(data, send_buffer_size, fp);
+        fread(data, 1, 1, fp);
+        if (send(sockfd, data, sizeof(data), 0) == -1)
+        {
+            printf("err: error in sending file");
+        }
+        bzero(data, send_buffer_size);
     }
-    bzero(data, size);
-  }
 }
 
 int main(int argc, char *argv[])
@@ -45,8 +59,8 @@ int main(int argc, char *argv[])
 
     // initialising global variables
     struct Stor_state stor_state;
-	stor_state.stor_type = 0;
-	strcpy(stor_state.file_name, "");
+    stor_state.stor_type = 0;
+    strcpy(stor_state.file_name, "");
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -124,20 +138,25 @@ int main(int argc, char *argv[])
             send(sock, message, strlen(message), 0);
             read(sock, buffer, 1024);
 
+            printf("%s\n", buffer); // printing buffer here
+
             char is_fine[2] = {0};
-            strncpy(is_fine, message, 1);
+            strncpy(is_fine, buffer, 1);
             is_fine[1] = 0;
 
             if (strcmp("+", is_fine) == 0)
             {
-                char* file_addr;
+                char file_addr[BUFFER_SIZE] = {0};
                 sprintf(file_addr, "transfer_files/%s", stor_state.file_name);
                 fp = fopen(file_addr, "r");
-                if (fp == NULL) {
+                if (fp == NULL)
+                {
                     printf("err: problem with filename");
                     continue;
                 }
+                printf("before send file\n");
                 send_file(fp, sock, num_of_bytes);
+                read(sock, buffer, 1024);
             }
             else
             {
