@@ -115,6 +115,10 @@ int main(int argc, char *argv[])
         {
             stor(client_fd, message, buffer);
         }
+        else if (strcmp("SIZE", temp) == 0)
+        {
+            size(client_fd, message, buffer);
+        }
         else
         {
             strcat(message, "-Invalid Command");
