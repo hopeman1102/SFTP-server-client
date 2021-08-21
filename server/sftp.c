@@ -15,51 +15,60 @@ void clear_buffers(char *message, char *buffer)
 	memset(buffer, 0, BUFFER_SIZE);
 }
 
-bool is_file_present(char* file_name){
-    struct stat buffer;
-    char file_addr[BUFFER_SIZE] = {0};
-		sprintf(file_addr, "recieved_files/%s", file_name);
-    int exist = stat(file_addr, &buffer);
-    if (exist == 0)
-        return true;
-    else  
-        return false;
+bool is_file_present(char *file_name)
+{
+	struct stat buffer;
+	char file_addr[BUFFER_SIZE] = {0};
+	sprintf(file_addr, "recieved_files/%s", file_name);
+	int exist = stat(file_addr, &buffer);
+	if (exist == 0)
+		return true;
+	else
+		return false;
 }
 
-void stor_file(int sockfd, int size){
-  int n;
-  FILE *fp;
+void stor_file(int sockfd, int size)
+{
+	int n;
+	FILE *fp;
 	char file_addr[BUFFER_SIZE] = {0};
-	sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
+	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 0)
+	{
+		sprintf(file_addr, "recieved_files/_%s", stor_state.file_name);
+	}
+	else
+	{
+		sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
+	}
 	int stor_buffer_size = 1;
-  char buffer[stor_buffer_size];
+	char buffer[stor_buffer_size+1];
+	buffer[stor_buffer_size] = 0;
 
-  fp = fopen(file_addr, "w");
-  // while (1) {
-	// 	printf("waiting in server\n");
-  //   n = recv(sockfd, buffer, stor_buffer_size, 0);
-	// 	printf("BUFFER: %s\n", buffer);
-  //   if (n <= 0){
-  //     break;
-  //     return;
-  //   }
-  //   fprintf(fp, "%s", buffer);
-  //   bzero(buffer, stor_buffer_size);
-  // }
-	for (int i = 0; i < size; i++) {
+	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 2)
+	{
+		fp = fopen(file_addr, "a");
+	}
+	else
+	{
+		fp = fopen(file_addr, "w");
+	}
+
+	for (int i = 0; i < size; i++)
+	{
 		printf("waiting in server\n");
-    n = recv(sockfd, buffer, stor_buffer_size, 0);
-		printf("BUFFER: %s", buffer);
-    if (n <= 0){
-      break;
-      return;
-    }
-    fprintf(fp, "%s", buffer);
-    bzero(buffer, stor_buffer_size);
+		n = recv(sockfd, buffer, stor_buffer_size, 0);
+		printf("BUFFER: %s\n", buffer);
+		if (n <= 0)
+		{
+			break;
+			return;
+		}
+		fprintf(fp, "%s", buffer);
+		bzero(buffer, stor_buffer_size);
 	}
 	printf("closing\n");
 	fclose(fp);
-  return;
+	return;
 }
 
 void reset_state()
@@ -271,7 +280,7 @@ void stor(int client_fd, char *message, char *buffer)
 void size(int client_fd, char *message, char *buffer)
 {
 	// add check to make sure stor was run first
-	char* num_of_bytes_str = strtok(buffer, " ");
+	char *num_of_bytes_str = strtok(buffer, " ");
 	num_of_bytes_str = strtok(NULL, " ");
 	int num_of_bytes = atoi(num_of_bytes_str);
 

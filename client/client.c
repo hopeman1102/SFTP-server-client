@@ -25,21 +25,15 @@ void send_file(FILE *fp, int sockfd, int size)
 {
     int n;
     int send_buffer_size = 1;
-    char data[send_buffer_size];
+    char data[send_buffer_size+1];
+    data[send_buffer_size] = 0;
     printf("in send file client\n");
-    //   while(fgets(data, BUFFER_SIZE, fp) != NULL) {
-    //     printf("hello\n");
-    //     if (send(sockfd, data, sizeof(data), 0) == -1) {
-    //       printf("err: error in sending file");
-    //     }
-    //     bzero(data, BUFFER_SIZE);
-    //   }
     int i = 0;
     for(int i = 0; i < size; i++) {
-        printf("hello\n");
         //fgets(data, send_buffer_size, fp);
         fread(data, 1, 1, fp);
-        if (send(sockfd, data, sizeof(data), 0) == -1)
+        printf("DATA: %s\n", data);
+        if (send(sockfd, data, send_buffer_size, 0) == -1)
         {
             printf("err: error in sending file");
         }
