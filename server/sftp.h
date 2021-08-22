@@ -24,6 +24,8 @@ void stor(int, char*, char*);
 
 void size(int, char*, char*);
 
+void kill(int, char*, char*);
+
 void reset_state();
 
 #endif

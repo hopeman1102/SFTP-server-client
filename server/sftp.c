@@ -41,7 +41,7 @@ void stor_file(int sockfd, int size)
 		sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
 	}
 	int stor_buffer_size = 1;
-	char buffer[stor_buffer_size+1];
+	char buffer[stor_buffer_size + 1];
 	buffer[stor_buffer_size] = 0;
 
 	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 2)
@@ -291,6 +291,32 @@ void size(int client_fd, char *message, char *buffer)
 	stor_file(client_fd, num_of_bytes);
 
 	sprintf(message, "+Saved %s", stor_state.file_name);
+	send(client_fd, message, strlen(message), 0);
+	clear_buffers(message, buffer);
+}
+
+void kill(int client_fd, char *message, char *buffer)
+{
+	char *file_name = strtok(buffer, " ");
+	file_name = strtok(NULL, " ");
+	if (file_name == NULL)
+	{
+		strcpy(message, "-file not specified");
+	}
+	else
+	{
+		char file_addr[HALF_BUFFER_SIZE] = {0};
+		sprintf(file_addr, "recieved_files/%s", file_name);
+		if (remove(file_addr) == 0)
+		{
+			sprintf(message, "+%s deleted", file_name);
+		}
+		else
+		{
+			strcpy(message, "-file not deleted");
+		}
+	}
+
 	send(client_fd, message, strlen(message), 0);
 	clear_buffers(message, buffer);
 }

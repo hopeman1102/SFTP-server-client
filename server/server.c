@@ -119,6 +119,10 @@ int main(int argc, char *argv[])
         {
             size(client_fd, message, buffer);
         }
+        else if (strcmp("KILL", temp) == 0)
+        {
+            kill(client_fd, message, buffer);
+        }
         else
         {
             strcat(message, "-Invalid Command");
