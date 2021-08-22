@@ -28,6 +28,25 @@ bool is_file_present(char *file_name)
 		return false;
 }
 
+long int findSize(char* file_name)
+{
+	struct stat buffer;
+	char file_addr[BUFFER_SIZE] = {0};
+	sprintf(file_addr, "recieved_files/%s", file_name);
+
+    FILE* file = fopen(file_addr, "r");
+  
+    if (file == NULL) {
+        printf("file not found\n");
+        return -1;
+    }
+  
+    fseek(file, 0L, SEEK_END);
+    long int res = ftell(file);
+    fclose(file);
+    return res;
+}
+
 void stor_file(int sockfd, int size)
 {
 	int n;
@@ -327,19 +346,52 @@ void list(int client_fd, char *message, char *buffer)
 	struct dirent *de;
 	DIR *dr = opendir("./recieved_files");
 	char *temp_str;
-	
-	if (dr == NULL)
+
+	char *list_type = strtok(buffer, " ");
+	list_type = strtok(NULL, " ");
+
+	if (list_type == NULL)
 	{
-		strcpy(message, "-error in opening directory");
+		strcpy(message, "-list type not specified");
 	}
 	else
 	{
-		strcpy(message, "+PS\n");
-	}
-	while ((de = readdir(dr)) != NULL)
-	{
-		sprintf(temp_str, "%s\n", de->d_name);
-		strcat(message, temp_str);
+		if (dr == NULL)
+		{
+			strcpy(message, "-error in opening directory");
+		}
+		else
+		{
+			strcpy(message, "+PS\n");
+		}
+		if (strcmp(list_type, "F") == 0)
+		{
+			while ((de = readdir(dr)) != NULL)
+			{
+				if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
+				{
+					sprintf(temp_str, "%s\n", de->d_name);
+					strcat(message, temp_str);
+				}
+			}
+		}
+		else if (strcmp(list_type, "V") == 0)
+		{
+			while ((de = readdir(dr)) != NULL)
+			{
+				if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0) 
+				{
+					long int file_size = findSize(de->d_name);
+					printf("%s\n", de->d_name);
+					sprintf(temp_str, "%s\t%ld\t%ld bytes\n", de->d_name, de->d_ino, file_size);
+					strcat(message, temp_str);
+				}
+			}
+		}
+		else 
+		{
+			strcpy(message, "invalid LIST type");
+		}
 	}
 	closedir(dr);
 	send(client_fd, message, strlen(message), 0);
