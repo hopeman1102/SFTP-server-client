@@ -123,6 +123,9 @@ int main(int argc, char *argv[])
         {
             kill(client_fd, message, buffer);
         }
+        else if (strcmp("LIST", temp) == 0) {
+            list(client_fd, message, buffer);
+        }
         else
         {
             strcat(message, "-Invalid Command");

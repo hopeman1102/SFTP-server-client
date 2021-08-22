@@ -26,6 +26,8 @@ void size(int, char*, char*);
 
 void kill(int, char*, char*);
 
+void list(int, char*, char*);
+
 void reset_state();
 
 #endif

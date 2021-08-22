@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include "sqlite/sqlite3.h"
 #include "global.h"
 
@@ -317,6 +318,30 @@ void kill(int client_fd, char *message, char *buffer)
 		}
 	}
 
+	send(client_fd, message, strlen(message), 0);
+	clear_buffers(message, buffer);
+}
+
+void list(int client_fd, char *message, char *buffer)
+{
+	struct dirent *de;
+	DIR *dr = opendir("./recieved_files");
+	char *temp_str;
+	
+	if (dr == NULL)
+	{
+		strcpy(message, "-error in opening directory");
+	}
+	else
+	{
+		strcpy(message, "+PS\n");
+	}
+	while ((de = readdir(dr)) != NULL)
+	{
+		sprintf(temp_str, "%s\n", de->d_name);
+		strcat(message, temp_str);
+	}
+	closedir(dr);
 	send(client_fd, message, strlen(message), 0);
 	clear_buffers(message, buffer);
 }
