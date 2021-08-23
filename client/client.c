@@ -78,6 +78,8 @@ int main(int argc, char *argv[])
 
     read(sock, buffer, 1024);
     printf("%s\n", buffer);
+    memset(message, 0, sizeof(message));
+    memset(buffer, 0, sizeof(buffer));
 
     while (1)
     {

@@ -28,6 +28,10 @@ void kill(int, char*, char*);
 
 void list(int, char*, char*);
 
+void name(int, char*, char*);
+
+void tobe(int, char*, char*);
+
 void reset_state();
 
 #endif

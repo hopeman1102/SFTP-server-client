@@ -123,8 +123,17 @@ int main(int argc, char *argv[])
         {
             kill(client_fd, message, buffer);
         }
-        else if (strcmp("LIST", temp) == 0) {
+        else if (strcmp("LIST", temp) == 0)
+        {
             list(client_fd, message, buffer);
+        }
+        else if (strcmp("NAME", temp) == 0)
+        {
+            name(client_fd, message, buffer);
+        }
+        else if (strcmp("TOBE", temp) == 0)
+        {
+            tobe(client_fd, message, buffer);
         }
         else
         {
@@ -134,7 +143,7 @@ int main(int argc, char *argv[])
             memset(message, 0, BUFFER_SIZE);
         }
         memset(buffer, 0, BUFFER_SIZE);
-        memset(message, 0, BUFFER_SIZE); 
+        memset(message, 0, BUFFER_SIZE);
     }
     return 0;
 }

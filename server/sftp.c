@@ -28,23 +28,24 @@ bool is_file_present(char *file_name)
 		return false;
 }
 
-long int findSize(char* file_name)
+long int findSize(char *file_name)
 {
 	struct stat buffer;
 	char file_addr[BUFFER_SIZE] = {0};
 	sprintf(file_addr, "recieved_files/%s", file_name);
 
-    FILE* file = fopen(file_addr, "r");
-  
-    if (file == NULL) {
-        printf("file not found\n");
-        return -1;
-    }
-  
-    fseek(file, 0L, SEEK_END);
-    long int res = ftell(file);
-    fclose(file);
-    return res;
+	FILE *file = fopen(file_addr, "r");
+
+	if (file == NULL)
+	{
+		printf("file not found\n");
+		return -1;
+	}
+
+	fseek(file, 0L, SEEK_END);
+	long int res = ftell(file);
+	fclose(file);
+	return res;
 }
 
 void stor_file(int sockfd, int size)
@@ -98,6 +99,7 @@ void reset_state()
 	strcpy(user_info.userAcc, "");
 	stor_state.stor_type = 0;
 	strcpy(stor_state.file_name, "");
+	strcpy(file_to_change_name, "");
 }
 
 void done(int client_fd, char *message, char *buffer, bool *is_closed)
@@ -379,21 +381,76 @@ void list(int client_fd, char *message, char *buffer)
 		{
 			while ((de = readdir(dr)) != NULL)
 			{
-				if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0) 
+				if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
 				{
 					long int file_size = findSize(de->d_name);
 					printf("%s\n", de->d_name);
-					sprintf(temp_str, "%s\t%ld\t%ld bytes\n", de->d_name, de->d_ino, file_size);
+					sprintf(temp_str, "%s\t%ld bytes\n", de->d_name, file_size);
 					strcat(message, temp_str);
 				}
 			}
 		}
-		else 
+		else
 		{
 			strcpy(message, "invalid LIST type");
 		}
 	}
 	closedir(dr);
+	send(client_fd, message, strlen(message), 0);
+	clear_buffers(message, buffer);
+}
+
+void name(int client_fd, char *message, char *buffer)
+{
+	char *file_name = strtok(buffer, " ");
+	file_name = strtok(NULL, " ");
+
+	if (file_name == NULL)
+	{
+		strcpy(message, "-file name not specified");
+	}
+	else
+	{
+		if (is_file_present(file_name))
+		{
+			strcpy(file_to_change_name, file_name);
+			strcpy(message, "+File exists");
+		}
+		else
+		{
+			sprintf(message, "-Can't find %s", file_name);
+		}
+	}
+	send(client_fd, message, strlen(message), 0);
+	clear_buffers(message, buffer);
+}
+
+void tobe(int client_fd, char *message, char *buffer)
+{
+	char *new_file_spec = strtok(buffer, " ");
+	new_file_spec = strtok(NULL, " ");
+
+	if (new_file_spec == NULL)
+	{
+		strcpy(message, "-new file spec not specified");
+	}
+	else
+	{
+		char file_addr[BUFFER_SIZE] = {0};
+		char file_addr_new[BUFFER_SIZE] = {0};
+		sprintf(file_addr, "recieved_files/%s", file_to_change_name);
+		sprintf(file_addr_new, "recieved_files/%s", new_file_spec);
+		int res = rename(file_addr, file_addr_new);
+		if (res == 0)
+		{
+			sprintf(message, "+%s renamed to %s", file_to_change_name, new_file_spec);
+		}
+		else
+		{
+			strcpy(message, "-File wasn't renamed");
+		}
+	}
+	strcpy(file_to_change_name, "");
 	send(client_fd, message, strlen(message), 0);
 	clear_buffers(message, buffer);
 }
