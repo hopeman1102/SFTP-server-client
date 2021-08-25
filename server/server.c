@@ -135,6 +135,14 @@ int main(int argc, char *argv[])
         {
             tobe(client_fd, message, buffer);
         }
+        else if (strcmp("RETR", temp) == 0)
+        {
+            retr(client_fd, message, buffer);
+        }
+        else if (strcmp("SEND", temp) == 0)
+        {
+            send_retr(client_fd, message, buffer);
+        }
         else
         {
             strcat(message, "-Invalid Command");

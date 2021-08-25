@@ -40,4 +40,6 @@ struct Stor_state stor_state;
 
 char file_to_change_name[HALF_BUFFER_SIZE];
 
+char retr_file_name[HALF_BUFFER_SIZE];
+
 #endif

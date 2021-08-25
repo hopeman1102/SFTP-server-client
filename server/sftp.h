@@ -32,6 +32,10 @@ void name(int, char*, char*);
 
 void tobe(int, char*, char*);
 
+void retr(int, char*, char*);
+
+void send_retr(int, char*, char*);
+
 void reset_state();
 
 #endif

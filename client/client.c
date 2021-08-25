@@ -38,6 +38,47 @@ void send_file(FILE *fp, int sockfd, int size)
     }
 }
 
+void stor_file(int sockfd, int size)
+{
+	int n;
+	FILE *fp;
+	char file_addr[BUFFER_SIZE] = {0};
+	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 0)
+	{
+		sprintf(file_addr, "recieved_files/_%s", stor_state.file_name);
+	}
+	else
+	{
+		sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
+	}
+	int stor_buffer_size = 1;
+	char buffer[stor_buffer_size + 1];
+	buffer[stor_buffer_size] = 0;
+
+	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 2)
+	{
+		fp = fopen(file_addr, "a");
+	}
+	else
+	{
+		fp = fopen(file_addr, "w");
+	}
+
+	for (int i = 0; i < size; i++)
+	{
+		n = recv(sockfd, buffer, stor_buffer_size, 0);
+		if (n <= 0)
+		{
+			break;
+			return;
+		}
+		fprintf(fp, "%s", buffer);
+		bzero(buffer, stor_buffer_size);
+	}
+	fclose(fp);
+	return;
+}
+
 int main(int argc, char *argv[])
 {
     int sock = 0;

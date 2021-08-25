@@ -89,6 +89,23 @@ void stor_file(int sockfd, int size)
 	return;
 }
 
+void send_file(FILE *fp, int sockfd, int size)
+{
+    int n;
+    int send_buffer_size = 1;
+    char data[send_buffer_size+1];
+    data[send_buffer_size] = 0;
+    int i = 0;
+    for(int i = 0; i < size; i++) {
+        fread(data, 1, 1, fp);
+        if (send(sockfd, data, send_buffer_size, 0) == -1)
+        {
+            printf("err: error in sending file");
+        }
+        bzero(data, send_buffer_size);
+    }
+}
+
 void reset_state()
 {
 	user_state.accVerified = false;
@@ -100,6 +117,7 @@ void reset_state()
 	stor_state.stor_type = 0;
 	strcpy(stor_state.file_name, "");
 	strcpy(file_to_change_name, "");
+	strcpy(retr_file_name, "");
 }
 
 void done(int client_fd, char *message, char *buffer, bool *is_closed)
@@ -347,7 +365,7 @@ void list(int client_fd, char *message, char *buffer)
 {
 	struct dirent *de;
 	DIR *dr = opendir("./recieved_files");
-	char *temp_str;
+	char temp_str[HALF_BUFFER_SIZE] = {0};
 
 	char *list_type = strtok(buffer, " ");
 	list_type = strtok(NULL, " ");
@@ -453,4 +471,35 @@ void tobe(int client_fd, char *message, char *buffer)
 	strcpy(file_to_change_name, "");
 	send(client_fd, message, strlen(message), 0);
 	clear_buffers(message, buffer);
+}
+
+void retr(int client_fd, char *message, char *buffer)
+{
+	char *file_spec = strtok(buffer, " ");
+	file_spec = strtok(NULL, " ");
+
+	if (file_spec == NULL)
+	{
+		strcpy(message, "-File doesn't exist");
+	}
+	else
+	{
+		if (is_file_present(file_spec))
+		{
+			sprintf(message, "%ld", findSize(file_spec));
+			strcpy(retr_file_name, file_spec);
+		}
+		else
+		{
+			strcpy(message, "-File doesn't exist");
+		}
+	}
+
+	send(client_fd, message, strlen(message), 0);
+	clear_buffers(message, buffer);
+}
+
+void send_retr(int client_fd, char *message, char *buffer)
+{
+	// use send_file funtion above
 }
