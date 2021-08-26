@@ -36,6 +36,8 @@ void retr(int, char*, char*);
 
 void send_retr(int, char*, char*);
 
+void stop_retr(int, char*, char*);
+
 void reset_state();
 
 #endif

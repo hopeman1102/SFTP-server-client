@@ -89,21 +89,22 @@ void stor_file(int sockfd, int size)
 	return;
 }
 
-void send_file(FILE *fp, int sockfd, int size)
+void send_file(FILE *fp, int sockfd, long int size)
 {
-    int n;
-    int send_buffer_size = 1;
-    char data[send_buffer_size+1];
-    data[send_buffer_size] = 0;
-    int i = 0;
-    for(int i = 0; i < size; i++) {
-        fread(data, 1, 1, fp);
-        if (send(sockfd, data, send_buffer_size, 0) == -1)
-        {
-            printf("err: error in sending file");
-        }
-        bzero(data, send_buffer_size);
-    }
+	int n;
+	int send_buffer_size = 1;
+	char data[send_buffer_size + 1];
+	data[send_buffer_size] = 0;
+	int i = 0;
+	for (int i = 0; i < size; i++)
+	{
+		fread(data, 1, 1, fp);
+		if (send(sockfd, data, send_buffer_size, 0) == -1)
+		{
+			printf("err: error in sending file");
+		}
+		bzero(data, send_buffer_size);
+	}
 }
 
 void reset_state()
@@ -118,6 +119,7 @@ void reset_state()
 	strcpy(stor_state.file_name, "");
 	strcpy(file_to_change_name, "");
 	strcpy(retr_file_name, "");
+	retr_file_size = 0;
 }
 
 void done(int client_fd, char *message, char *buffer, bool *is_closed)
@@ -487,6 +489,7 @@ void retr(int client_fd, char *message, char *buffer)
 		if (is_file_present(file_spec))
 		{
 			sprintf(message, "%ld", findSize(file_spec));
+			retr_file_size = findSize(file_spec);
 			strcpy(retr_file_name, file_spec);
 		}
 		else
@@ -501,5 +504,18 @@ void retr(int client_fd, char *message, char *buffer)
 
 void send_retr(int client_fd, char *message, char *buffer)
 {
-	// use send_file funtion above
+	FILE *fp;
+	char file_addr[BUFFER_SIZE] = {0};
+	sprintf(file_addr, "recieved_files/%s", retr_file_name);
+	fp = fopen(file_addr, "r");
+	send_file(fp, client_fd, retr_file_size);
+}
+
+void stop_retr(int client_fd, char *message, char *buffer)
+{
+	strcpy(message, "+ok, RETR aborted");
+	strcpy(retr_file_name, "");
+	send(client_fd, message, strlen(message), 0);
+	retr_file_size = 0;
+	clear_buffers(message, buffer);
 }

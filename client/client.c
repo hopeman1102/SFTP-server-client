@@ -38,31 +38,18 @@ void send_file(FILE *fp, int sockfd, int size)
     }
 }
 
-void stor_file(int sockfd, int size)
+void stor_file(int sockfd, int size, char* file_name)
 {
 	int n;
 	FILE *fp;
 	char file_addr[BUFFER_SIZE] = {0};
-	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 0)
-	{
-		sprintf(file_addr, "recieved_files/_%s", stor_state.file_name);
-	}
-	else
-	{
-		sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
-	}
-	int stor_buffer_size = 1;
+	sprintf(file_addr, "transfer_files/%s", file_name);
+	
+    int stor_buffer_size = 1;
 	char buffer[stor_buffer_size + 1];
 	buffer[stor_buffer_size] = 0;
 
-	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 2)
-	{
-		fp = fopen(file_addr, "a");
-	}
-	else
-	{
-		fp = fopen(file_addr, "w");
-	}
+	fp = fopen(file_addr, "w");
 
 	for (int i = 0; i < size; i++)
 	{
@@ -86,8 +73,9 @@ int main(int argc, char *argv[])
     char message[BUFFER_SIZE] = {0};
     char buffer[BUFFER_SIZE] = {0};
     char temp[BUFFER_SIZE] = {0};
+    int retr_file_size = 0;
+    char retr_file_name[HALF_BUFFER_SIZE] = {0};
     FILE *fp;
-    char *filename = "transfer_files/temp1.txt";
 
     // initialising global variables
     struct Stor_state stor_state;
@@ -154,6 +142,37 @@ int main(int argc, char *argv[])
                 printf("err: specified file does not exist\n");
                 continue;
             }
+        }
+        else if (strcmp("RETR", temp) == 0)
+        {
+            char temp_message[BUFFER_SIZE] = {0};
+            strcpy(temp_message, message);
+            char *file_name = strtok(temp_message, " ");
+            file_name = strtok(NULL, " ");
+            strcpy(retr_file_name, file_name);
+
+            send(sock, message, strlen(message), 0);
+            read(sock, buffer, 1024);
+
+            char is_fine[2] = {0};
+            strncpy(is_fine, buffer, 1);
+            is_fine[1] = 0;
+
+            if (strcmp("-", is_fine) == 0)
+            {
+                continue;
+            }
+            else
+            {
+                retr_file_size = atoi(buffer);
+            }
+        }
+        else if (strcmp("SEND", temp) == 0)
+        {
+            send(sock, message, strlen(message), 0);
+            stor_file(sock, retr_file_size, retr_file_name);
+            retr_file_size = 0;
+            strcpy(retr_file_name, "");
         }
         else if (strcmp("SIZE", temp) == 0)
         {

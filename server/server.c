@@ -143,6 +143,10 @@ int main(int argc, char *argv[])
         {
             send_retr(client_fd, message, buffer);
         }
+        else if (strcmp("STOP", temp) == 0)
+        {
+            stop_retr(client_fd, message, buffer);
+        }
         else
         {
             strcat(message, "-Invalid Command");
