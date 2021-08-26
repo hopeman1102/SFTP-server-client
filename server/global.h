@@ -43,4 +43,6 @@ char file_to_change_name[HALF_BUFFER_SIZE];
 char retr_file_name[HALF_BUFFER_SIZE];
 long int retr_file_size;
 
+char dir[HALF_BUFFER_SIZE];
+
 #endif

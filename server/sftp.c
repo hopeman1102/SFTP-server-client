@@ -20,7 +20,7 @@ bool is_file_present(char *file_name)
 {
 	struct stat buffer;
 	char file_addr[BUFFER_SIZE] = {0};
-	sprintf(file_addr, "recieved_files/%s", file_name);
+	sprintf(file_addr, "%s/%s", dir, file_name);
 	int exist = stat(file_addr, &buffer);
 	if (exist == 0)
 		return true;
@@ -32,7 +32,7 @@ long int findSize(char *file_name)
 {
 	struct stat buffer;
 	char file_addr[BUFFER_SIZE] = {0};
-	sprintf(file_addr, "recieved_files/%s", file_name);
+	sprintf(file_addr, "%s/%s", dir, file_name);
 
 	FILE *file = fopen(file_addr, "r");
 
@@ -55,11 +55,11 @@ void stor_file(int sockfd, int size)
 	char file_addr[BUFFER_SIZE] = {0};
 	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 0)
 	{
-		sprintf(file_addr, "recieved_files/_%s", stor_state.file_name);
+		sprintf(file_addr, "%s/_%s", dir, stor_state.file_name);
 	}
 	else
 	{
-		sprintf(file_addr, "recieved_files/%s", stor_state.file_name);
+		sprintf(file_addr, "%s/%s", dir, stor_state.file_name);
 	}
 	int stor_buffer_size = 1;
 	char buffer[stor_buffer_size + 1];
@@ -120,6 +120,7 @@ void reset_state()
 	strcpy(file_to_change_name, "");
 	strcpy(retr_file_name, "");
 	retr_file_size = 0;
+	strcpy(dir, "recieved_files");
 }
 
 void done(int client_fd, char *message, char *buffer, bool *is_closed)
@@ -348,7 +349,7 @@ void kill(int client_fd, char *message, char *buffer)
 	else
 	{
 		char file_addr[HALF_BUFFER_SIZE] = {0};
-		sprintf(file_addr, "recieved_files/%s", file_name);
+		sprintf(file_addr, "%s/%s", dir, file_name);
 		if (remove(file_addr) == 0)
 		{
 			sprintf(message, "+%s deleted", file_name);
@@ -366,7 +367,9 @@ void kill(int client_fd, char *message, char *buffer)
 void list(int client_fd, char *message, char *buffer)
 {
 	struct dirent *de;
-	DIR *dr = opendir("./recieved_files");
+	char temp_dir[BUFFER_SIZE] = {0};
+	sprintf(temp_dir, "./%s", dir);
+	DIR *dr = opendir(temp_dir);
 	char temp_str[HALF_BUFFER_SIZE] = {0};
 
 	char *list_type = strtok(buffer, " ");
@@ -458,8 +461,8 @@ void tobe(int client_fd, char *message, char *buffer)
 	{
 		char file_addr[BUFFER_SIZE] = {0};
 		char file_addr_new[BUFFER_SIZE] = {0};
-		sprintf(file_addr, "recieved_files/%s", file_to_change_name);
-		sprintf(file_addr_new, "recieved_files/%s", new_file_spec);
+		sprintf(file_addr, "%s/%s", dir, file_to_change_name);
+		sprintf(file_addr_new, "%s/%s", dir, new_file_spec);
 		int res = rename(file_addr, file_addr_new);
 		if (res == 0)
 		{
@@ -506,7 +509,7 @@ void send_retr(int client_fd, char *message, char *buffer)
 {
 	FILE *fp;
 	char file_addr[BUFFER_SIZE] = {0};
-	sprintf(file_addr, "recieved_files/%s", retr_file_name);
+	sprintf(file_addr, "%s/%s", dir, retr_file_name);
 	fp = fopen(file_addr, "r");
 	send_file(fp, client_fd, retr_file_size);
 }
