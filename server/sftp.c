@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <errno.h>
 #include "sqlite/sqlite3.h"
 #include "global.h"
 
@@ -520,5 +521,39 @@ void stop_retr(int client_fd, char *message, char *buffer)
 	strcpy(retr_file_name, "");
 	send(client_fd, message, strlen(message), 0);
 	retr_file_size = 0;
+	clear_buffers(message, buffer);
+}
+
+void cdir(int client_fd, char *message, char *buffer)
+{
+	char *dir_str = strtok(buffer, " ");
+	dir_str = strtok(NULL, " ");
+	if (strcmp(dir_str, "..") == 0)
+	{
+		sprintf(dir, "recieved_files");
+		sprintf(message, "!Changed working dir to root/parent dir");
+	}
+	else
+	{
+		char dir_str_addr[HALF_BUFFER_SIZE] = {0};
+		sprintf(dir_str_addr, "recieved_files/%s", dir_str);
+		DIR *dir_fd = opendir(dir_str_addr);
+		if (dir_fd)
+		{
+			strcpy(dir, dir_str_addr);
+			closedir(dir_fd);
+			sprintf(message, "!Changed working dir to %s", dir_str);
+		}
+		else if (ENOENT == errno)
+		{
+			strcpy(message, "-Can't connect to directory because: specified directory does not exist");
+		}
+		else
+		{
+			strcpy(message, "-Can't connect to directory");
+		}
+	}
+
+	send(client_fd, message, strlen(message), 0);
 	clear_buffers(message, buffer);
 }

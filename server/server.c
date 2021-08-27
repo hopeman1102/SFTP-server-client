@@ -147,6 +147,10 @@ int main(int argc, char *argv[])
         {
             stop_retr(client_fd, message, buffer);
         }
+        else if (strcmp("CDIR", temp) == 0)
+        {
+            cdir(client_fd, message, buffer);
+        }
         else
         {
             strcat(message, "-Invalid Command");
