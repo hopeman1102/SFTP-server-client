@@ -192,7 +192,8 @@ void user(int client_fd, sqlite3 *db, sqlite3_stmt *stmt, char *message, char *b
 		strcpy(user_info.userId, (char *)id_temp);
 		bool is_pass = is_pass_present(db, stmt, user_id);
 		bool is_acct = is_acct_present(db, stmt, user_id);
-		if (is_pass && is_acct) {
+		if (is_pass && is_acct)
+		{
 			sprintf(message, "+%s ok, send account and password", user_info.userId);
 			send(client_fd, message, strlen(message), 0);
 		}
@@ -212,6 +213,7 @@ void user(int client_fd, sqlite3 *db, sqlite3_stmt *stmt, char *message, char *b
 		{
 			user_state.passVerified = true;
 			user_state.accVerified = true;
+			user_state.isLoggedIn = true;
 			sprintf(message, "!%s logged in", user_info.userId);
 			send(client_fd, message, strlen(message), 0);
 		}
@@ -332,6 +334,14 @@ int type(int client_fd, char *message, char *buffer)
 
 void stor(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	char *stor_type = strtok(buffer, " ");
 	stor_type = strtok(NULL, " ");
 	char *file_name = strtok(NULL, " ");
@@ -379,6 +389,14 @@ void stor(int client_fd, char *message, char *buffer)
 
 void size(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	// add check to make sure stor was run first
 	char *num_of_bytes_str = strtok(buffer, " ");
 	num_of_bytes_str = strtok(NULL, " ");
@@ -400,6 +418,14 @@ void size(int client_fd, char *message, char *buffer)
 
 void kill(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	char *file_name = strtok(buffer, " ");
 	file_name = strtok(NULL, " ");
 	if (file_name == NULL)
@@ -426,6 +452,14 @@ void kill(int client_fd, char *message, char *buffer)
 
 void list(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	struct dirent *de;
 	char temp_dir[BUFFER_SIZE] = {0};
 	sprintf(temp_dir, "./%s", dir);
@@ -485,6 +519,14 @@ void list(int client_fd, char *message, char *buffer)
 
 void name(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	char *file_name = strtok(buffer, " ");
 	file_name = strtok(NULL, " ");
 
@@ -510,6 +552,14 @@ void name(int client_fd, char *message, char *buffer)
 
 void tobe(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	char *new_file_spec = strtok(buffer, " ");
 	new_file_spec = strtok(NULL, " ");
 
@@ -540,6 +590,14 @@ void tobe(int client_fd, char *message, char *buffer)
 
 void retr(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	char *file_spec = strtok(buffer, " ");
 	file_spec = strtok(NULL, " ");
 
@@ -567,6 +625,14 @@ void retr(int client_fd, char *message, char *buffer)
 
 void send_retr(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	FILE *fp;
 	char file_addr[BUFFER_SIZE] = {0};
 	sprintf(file_addr, "%s/%s", dir, retr_file_name);
@@ -576,6 +642,14 @@ void send_retr(int client_fd, char *message, char *buffer)
 
 void stop_retr(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	strcpy(message, "+ok, RETR aborted");
 	strcpy(retr_file_name, "");
 	send(client_fd, message, strlen(message), 0);
@@ -585,6 +659,14 @@ void stop_retr(int client_fd, char *message, char *buffer)
 
 void cdir(int client_fd, char *message, char *buffer)
 {
+	if (!user_state.isLoggedIn)
+	{
+		sprintf(message, "-Permission denied, not logged in");
+		send(client_fd, message, strlen(message), 0);
+		clear_buffers(message, buffer);
+		return;
+	}
+
 	char *dir_str = strtok(buffer, " ");
 	dir_str = strtok(NULL, " ");
 	if (strcmp(dir_str, "..") == 0)
