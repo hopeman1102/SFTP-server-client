@@ -139,6 +139,42 @@ void done(int client_fd, char *message, char *buffer, bool *is_closed)
 	reset_state();
 }
 
+bool is_pass_present(sqlite3 *db, sqlite3_stmt *stmt, char *user_id)
+{
+	char query[512];
+	sprintf(query, "select id, acc, pass from users where id = '%s';", user_id);
+	sqlite3_prepare_v2(db, query, -1, &stmt, 0);
+	const unsigned char *pass_temp;
+	sqlite3_step(stmt);
+	pass_temp = sqlite3_column_text(stmt, 2);
+	if (pass_temp != NULL)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool is_acct_present(sqlite3 *db, sqlite3_stmt *stmt, char *user_id)
+{
+	char query[512];
+	sprintf(query, "select id, acc, pass from users where id = '%s';", user_id);
+	sqlite3_prepare_v2(db, query, -1, &stmt, 0);
+	const unsigned char *acct_temp;
+	sqlite3_step(stmt);
+	acct_temp = sqlite3_column_text(stmt, 1);
+	if (acct_temp != NULL)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void user(int client_fd, sqlite3 *db, sqlite3_stmt *stmt, char *message, char *buffer)
 {
 	char *user_id = strtok(buffer, " ");
@@ -154,8 +190,31 @@ void user(int client_fd, sqlite3 *db, sqlite3_stmt *stmt, char *message, char *b
 	{
 		user_state.idVerified = true;
 		strcpy(user_info.userId, (char *)id_temp);
-		sprintf(message, "+%s ok, send account and password", user_info.userId);
-		send(client_fd, message, strlen(message), 0);
+		bool is_pass = is_pass_present(db, stmt, user_id);
+		bool is_acct = is_acct_present(db, stmt, user_id);
+		if (is_pass && is_acct) {
+			sprintf(message, "+%s ok, send account and password", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		}
+		else if (!is_pass && is_acct)
+		{
+			user_state.passVerified = true;
+			sprintf(message, "+%s ok, send account, password not required", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		}
+		else if (!is_acct && is_pass)
+		{
+			user_state.accVerified = true;
+			sprintf(message, "+%s ok, send password, account not required", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		}
+		else
+		{
+			user_state.passVerified = true;
+			user_state.accVerified = true;
+			sprintf(message, "!%s logged in", user_info.userId);
+			send(client_fd, message, strlen(message), 0);
+		}
 	}
 	else
 	{
