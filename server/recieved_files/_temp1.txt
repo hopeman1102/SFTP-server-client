@@ -1,4 +1,2 @@
 This is a file to be sent.
-This is a file to be sent.
-This is a file to be sent.
-This is a file to b
+This is a file to

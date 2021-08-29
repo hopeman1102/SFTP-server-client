@@ -97,3 +97,9 @@ echo "${GREEN}${bold}✔ Cannot access without logging in${NC}${normal}\n"
 ./type_test.sh
 
 ./list_test.sh
+
+./kill_and_name.sh
+
+./retr.sh
+
+./stor.sh

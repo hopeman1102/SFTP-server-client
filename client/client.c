@@ -25,10 +25,11 @@ void send_file(FILE *fp, int sockfd, int size)
 {
     int n;
     int send_buffer_size = 1;
-    char data[send_buffer_size+1];
+    char data[send_buffer_size + 1];
     data[send_buffer_size] = 0;
     int i = 0;
-    for(int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++)
+    {
         fread(data, 1, 1, fp);
         if (send(sockfd, data, send_buffer_size, 0) == -1)
         {
@@ -38,32 +39,32 @@ void send_file(FILE *fp, int sockfd, int size)
     }
 }
 
-void stor_file(int sockfd, int size, char* file_name)
+void stor_file(int sockfd, int size, char *file_name)
 {
-	int n;
-	FILE *fp;
-	char file_addr[BUFFER_SIZE] = {0};
-	sprintf(file_addr, "transfer_files/%s", file_name);
-	
+    int n;
+    FILE *fp;
+    char file_addr[BUFFER_SIZE] = {0};
+    sprintf(file_addr, "transfer_files/%s", file_name);
+
     int stor_buffer_size = 1;
-	char buffer[stor_buffer_size + 1];
-	buffer[stor_buffer_size] = 0;
+    char buffer[stor_buffer_size + 1];
+    buffer[stor_buffer_size] = 0;
 
-	fp = fopen(file_addr, "w");
+    fp = fopen(file_addr, "w");
 
-	for (int i = 0; i < size; i++)
-	{
-		n = recv(sockfd, buffer, stor_buffer_size, 0);
-		if (n <= 0)
-		{
-			break;
-			return;
-		}
-		fprintf(fp, "%s", buffer);
-		bzero(buffer, stor_buffer_size);
-	}
-	fclose(fp);
-	return;
+    for (int i = 0; i < size; i++)
+    {
+        n = recv(sockfd, buffer, stor_buffer_size, 0);
+        if (n <= 0)
+        {
+            break;
+            return;
+        }
+        fprintf(fp, "%s", buffer);
+        bzero(buffer, stor_buffer_size);
+    }
+    fclose(fp);
+    return;
 }
 
 int main(int argc, char *argv[])
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
     char temp[BUFFER_SIZE] = {0};
     int retr_file_size = 0;
     char retr_file_name[HALF_BUFFER_SIZE] = {0};
+    bool sent_stor = false;
     FILE *fp;
 
     // initialising global variables
@@ -112,6 +114,8 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        memset(message, 0, sizeof(message));
+        memset(buffer, 0, sizeof(buffer));
         fgets(message, BUFFER_SIZE, stdin);
         message[strcspn(message, "\n")] = 0; // removing the \n if exists
         strncpy(temp, message, 4);
@@ -136,6 +140,7 @@ int main(int argc, char *argv[])
                 strcpy(stor_state.file_name, file_name);
                 send(sock, message, strlen(message), 0);
                 read(sock, buffer, 1024);
+                sent_stor = true;
             }
             else
             {
@@ -149,13 +154,23 @@ int main(int argc, char *argv[])
             strcpy(temp_message, message);
             char *file_name = strtok(temp_message, " ");
             file_name = strtok(NULL, " ");
+            if (file_name == NULL)
+            {
+                printf("err: not enough arguments, please specify file name\n");
+                memset(message, 0, sizeof(message));
+                memset(buffer, 0, sizeof(buffer));
+                continue;
+            }
             strcpy(retr_file_name, file_name);
 
             send(sock, message, strlen(message), 0);
             read(sock, buffer, 1024);
+            printf("%s\n", buffer); // printing buffer here
 
+            char temp_buffer[BUFFER_SIZE] = {0};
+            strcpy(temp_buffer, buffer);
             char is_fine[2] = {0};
-            strncpy(is_fine, buffer, 1);
+            strncpy(is_fine, temp_buffer, 1);
             is_fine[1] = 0;
 
             if (strcmp("-", is_fine) == 0)
@@ -165,6 +180,7 @@ int main(int argc, char *argv[])
             else
             {
                 retr_file_size = atoi(buffer);
+                continue;
             }
         }
         else if (strcmp("SEND", temp) == 0)
@@ -173,45 +189,58 @@ int main(int argc, char *argv[])
             stor_file(sock, retr_file_size, retr_file_name);
             retr_file_size = 0;
             strcpy(retr_file_name, "");
+            continue;
         }
         else if (strcmp("SIZE", temp) == 0)
         {
-            char temp_message[BUFFER_SIZE] = {0};
-            strcpy(temp_message, message);
-            char *number_of_bytes_str = strtok(temp_message, " ");
-            number_of_bytes_str = strtok(NULL, " ");
-            if (number_of_bytes_str == NULL)
+            if (sent_stor)
             {
-                printf("err: not enough arguments, please specify number of bytes\n");
-                memset(message, 0, sizeof(message));
-                memset(buffer, 0, sizeof(buffer));
-                continue;
-            }
-            int num_of_bytes = atoi(number_of_bytes_str);
-            send(sock, message, strlen(message), 0);
-            read(sock, buffer, 1024);
-
-            printf("%s\n", buffer); // printing buffer here
-
-            char is_fine[2] = {0};
-            strncpy(is_fine, buffer, 1);
-            is_fine[1] = 0;
-
-            if (strcmp("+", is_fine) == 0)
-            {
-                char file_addr[BUFFER_SIZE] = {0};
-                sprintf(file_addr, "transfer_files/%s", stor_state.file_name);
-                fp = fopen(file_addr, "r");
-                if (fp == NULL)
+                sent_stor = false;
+                char temp_message[BUFFER_SIZE] = {0};
+                strcpy(temp_message, message);
+                char *number_of_bytes_str = strtok(temp_message, " ");
+                number_of_bytes_str = strtok(NULL, " ");
+                if (number_of_bytes_str == NULL)
                 {
-                    printf("err: problem with filename");
+                    printf("err: not enough arguments, please specify number of bytes\n");
+                    memset(message, 0, sizeof(message));
+                    memset(buffer, 0, sizeof(buffer));
                     continue;
                 }
-                send_file(fp, sock, num_of_bytes);
+                int num_of_bytes = atoi(number_of_bytes_str);
+                send(sock, message, strlen(message), 0);
                 read(sock, buffer, 1024);
+
+                printf("%s\n", buffer); // printing buffer here
+
+                char temp_buffer[BUFFER_SIZE] = {0};
+                strcpy(temp_buffer, buffer);
+                char is_fine[2] = {0};
+                strncpy(is_fine, temp_buffer, 1);
+                is_fine[1] = 0;
+
+                if (strcmp("+", is_fine) == 0)
+                {
+                    char file_addr[BUFFER_SIZE] = {0};
+                    sprintf(file_addr, "transfer_files/%s", stor_state.file_name);
+                    fp = fopen(file_addr, "r");
+                    if (fp == NULL)
+                    {
+                        printf("err: problem with filename");
+                        continue;
+                    }
+                    send_file(fp, sock, num_of_bytes);
+                    memset(buffer, 0, sizeof(buffer));
+                    read(sock, buffer, 1024);
+                }
+                else
+                {
+                    continue;
+                }
             }
             else
             {
+                printf("Please send STOR first");
                 continue;
             }
         }
@@ -236,8 +265,6 @@ int main(int argc, char *argv[])
         }
 
         printf("%s\n", buffer);
-        memset(message, 0, sizeof(message));
-        memset(buffer, 0, sizeof(buffer));
     }
     return 0;
 }

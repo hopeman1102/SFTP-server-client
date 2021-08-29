@@ -412,6 +412,7 @@ void size(int client_fd, char *message, char *buffer)
 	stor_file(client_fd, num_of_bytes);
 
 	sprintf(message, "+Saved %s", stor_state.file_name);
+	printf("%s\n", message);
 	send(client_fd, message, strlen(message), 0);
 	clear_buffers(message, buffer);
 }
