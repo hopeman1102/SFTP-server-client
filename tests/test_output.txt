@@ -1,0 +1,316 @@
+
+
+-------------DATABASE-------------
+ ---id----|---acc----|---pass---- 
+ --user1--|--u1acc1--|--pass123-- 
+ --user2--|--u2acc1--|--pass123-- 
+ --user2--|--u2acc1--|--pass123-- 
+ --user3--|---NULL---|---NULL---- 
+ --user4--|--u4acc1--|---NULL---- 
+ --user5--|---NULL---|--pass123-- 
+----------------------------------
+
+Run the server in a different terminal from server directory before this test.
+From the main directory -> cd server -> ./server
+
+Each test is ending with the DONE command so it is already being tested. The DONE command closes the connection between the client and server.
+It also closes the client application but keeps the server running so new clients can connect and utilise the service.
+
+To close the server, go to the terminal running the server and press ctrl+c. The client can be closed with the DONE command.
+
+Full Login
+Commands from client:
+USER user1
+ACCT u1acc1
+PASS pass123
+DONE
+Message from Server:
++CS725 SFTP Service
++user1 ok, send account and password
++user1 account verified, send password
+!user1 logged in
+✔ Login Tested
+
+Login when PASS and ACCT not required
+Commands from client:
+USER user3
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+✔ Login without PASS and ACCT Tested
+
+Login when PASS not required
+Commands from client:
+USER user4
+ACCT u4acc1
+DONE
+Message from Server:
++CS725 SFTP Service
++user4 ok, send account, password not required
+!user4 logged in
+✔ Login without PASS Tested
+
+Login when ACCT not required
+Commands from client:
+USER user5
+PASS pass123
+DONE
+Message from Server:
++CS725 SFTP Service
++user5 ok, send password, account not required
+!user5 logged in
+✔ Login without ACCT Tested
+
+Trying to run a command without logging in
+Commands from client:
+TYPE A
+DONE
+Message from Server:
++CS725 SFTP Service
+-Permission denied, not logged in
+✔ Cannot access without logging in
+
+Changing type to ASCII
+Commands from client:
+USER user3
+TYPE A
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++Using Ascii mode
+✔ Cannot access without logging in
+
+Changing type to BINARY
+Commands from client:
+USER user3
+TYPE B
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++Using Binary mode
+✔ Cannot access without logging in
+
+Changing type to CONTINUOUS
+Commands from client:
+USER user3
+TYPE C
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++Using Continuous mode
+✔ Cannot access without logging in
+
+LISTING all files using LIST with F mode
+Commands from client:
+USER user3
+LIST F
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++PS
+rick.txt
+hell0.txt
+_temp1.txt
+dir2
+renameMe.txt
+topdawg.txt
+dir1
+deleteThis.txt
+temp1.txt
+
+✔ Files in current directory listed with F mode
+
+LISTING all files using LIST with V mode
+Commands from client:
+USER user3
+LIST V
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++PS
+rick.txt	39 bytes
+hell0.txt	47 bytes
+_temp1.txt	44 bytes
+dir2	64 bytes
+renameMe.txt	0 bytes
+topdawg.txt	0 bytes
+dir1	128 bytes
+deleteThis.txt	0 bytes
+temp1.txt	512 bytes
+
+✔ Files in current directory listed with V mode
+
+Changing directory using CDIR and listing
+Commands from client:
+USER user3
+CDIR dir1
+LIST V
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+!Changed working dir to dir1
++PS
+dir2.txt	23 bytes
+temp2.txt	23 bytes
+
+✔ Files in changed directory listed
+
+Trying to KILL while specifying wrong name
+Commands from client:
+USER user3
+KILL wrongname.txt
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+-file not deleted
+✔ File not deleted as it does not exist
+
+Trying to KILL while specifying correct name
+Commands from client:
+USER user3
+KILL deleteThis.txt
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++deleteThis.txt deleted
+✔ deleteThis.txt file deleted in the server
+
+Trying to rename with NAME while specifying wrong file name
+Commands from client:
+USER user3
+NAME wrongRenameMe.txt
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+-Can't find wrongRenameMe.txt
+✔ Cannot rename using NAME as specified filename is wrong
+
+Trying to rename with NAME while specifying correct file name
+Commands from client:
+USER user3
+NAME renameMe.txt
+TOBE renamed.txt
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++File exists
++renameMe.txt renamed to renamed.txt
+✔ File renameMe.txt renamed to renamed.txt.
+This can be confirmed by checking the recieved_files directory in the sever folder.
+
+Trying to use RETR command when no file is specified
+Commands from client:
+USER user3
+RETR
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+err: not enough arguments, please specify file name
+✔ Could not use RETR with incomplete arguments
+
+Trying to use RETR when non existing file is specified
+Commands from client:
+USER user3
+RETR abc
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+-File doesn't exist
+✔ RETR does not work when file does not exist in the server
+
+Trying to use RETR with correct filename
+Commands from client:
+USER user3
+RETR temp1.txt
+SEND
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+512
+✔ File successfully transferred from server to client.
+This can be confirmed by observing the transfer_files folder in the tests folder.
+It can be seen the file transferred is 512 bytes.
+
+Aborting using STOP
+Commands from client:
+USER user3
+RETR temp1.txt
+STOP
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+512
++ok, RETR aborted
+✔ Successfully aborted using STOP.
+
+Trying to use STOR without complete arguments
+Commands from client:
+USER user3
+STOR
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
+err: not enough arguments, please specify file name
+✔ Could not use STOR with incomplete arguments
+
+Using STOR with NEW command
+Commands from client:
+USER user3
+STOR NEW stor_test.txt
+SIZE 100
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++File does not exist, will create new file
++ok, waiting for file
++Saved stor_test.txt
+✔ File successfully transferred.
+To verify check recieved_files folder in server folder.
+
+Using STOR with OLD command
+Commands from client:
+USER user3
+STOR OLD stor_test.txt
+SIZE 100
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++Will write over old file
++ok, waiting for file
++Saved stor_test.txt
+✔ File successfully transferred.
+To verify check recieved_files folder in server folder.
+
+Using STOR with APP command
+Commands from client:
+USER user3
+STOR APP stor_test.txt
+SIZE 100
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++Will append to file
++ok, waiting for file
++Saved stor_test.txt
+✔ File successfully transferred.
+To verify check recieved_files folder in server folder.
+
