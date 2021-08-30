@@ -1,5 +1,108 @@
 # SFTP-in-C
-Simple File Transfer Protocol implementation in C
+
+## COMPSYS725 Assignment 1: SFTP - RFC913
+
+### Submission
+This project implements the Simple File Transfer Protocol described in RFC 913 (https://tools.ietf.org/html/rfc913). This is completed in C, using Port 8080 as the default.
+
+Author: Harpreet Singh\
+UPI: hsin849\
+ID: 819582012
+
+**NOTE: When the client and server are running, the DONE command breaks the connection between the client and server. It also shuts down the client. The server keeps running and looks for new connections. As the server keeps running, a new client can connect to the server and utilise it. Upto 5 clients can form a queue and connect based on turn. If one client uses the DONE command, the next client in the queue would connect.** 
+
+**NOTE: Please close the client using the DONE command and not ctrl+c.** 
+
+## File Structure
+```
+-hsin849
+	-client
+		-transfer_files
+		client
+		client.c
+		global.g
+		Makefile
+	-server
+		-recieved_files
+		sqlite
+		database.c
+		database.h
+		global.h
+		Makefile
+		server
+		server.c
+		sftp.c
+		sftp.h
+		user.db
+	-tests
+		-transfer_files
+		kill_and_name.sh
+		list_test.sh
+		retr.sh
+		stor.sh
+		test_output.txt
+		test.sh (main testing file)
+		type_test.sh
+	.gitignore
+	Makefile
+	README.md
+```
+
+## Client Commands
+Provided below is the list of commands provided in the RFC913 Protocol.
+```
+<command> : = <cmd> [<SPACE> <args>] <NULL>
+
+<cmd> : =  USER ! ACCT ! PASS ! TYPE ! LIST ! CDIR ! KILL ! NAME ! DONE ! RETR ! STOR
+
+<response> : = <response-code> [<message>] <NULL>
+
+<response-code> : =  + | - |   | !
+```
+
+In this implementation, the commands are NOT case sensitive. Therefore, both 'USER user1' and 'user user1' will yield the same result. To send a command, simply enterthe command on the Client console, followed by the ENTER key. **Types are NOT case sensitive. For example, the command 'stor new temp.txt' will not work. The type NEW has to be in capital like: 'stor NEW temp.txt'**.
+
+If the cmd sent is not listed above, the server will respond with: ``'-Invalid Command'``
+
+All commands except USER, ACCT and PASS require the Client to be authenticated. If a command is entered that required authentication and the client is not logged in, the server will respond with:'Please login first to use this command.'
+
+## User Details
+|   id    |  acct |  pass  |
+| ------- |:-----:| ------:|
+| user1   |u1acc1 |pass123 |
+| user2   |u2acc1 |pass123 |
+| user2   |u2acc2 |pass123 |
+| user3   |       |        |
+| user4   |u2acc1 |        |
+| user5   |       |pass123 |
+
+#### user3 is the superior user i.e. provides easiest login processUser Details are stored in an SQLite Database, and fetched when required from within the ServerConnection. If further testing is required, simply open the users.db file in the server folder using a Database Browser and add in additional users. 
+
+## Instruction
+#### NOTE: Must Run these tests BEFORE manually interacting between the server and client
+
+#### NOTE-2: These tests have been tested for LINUX only. Windows and Linux appear to have different file seperators and C compilers, so it has only been run on LINUX. Test functionality on LINUX!
+
+#### NOTE-3: The tests run all the commands automatically. It makes the client send commands to the server and prints what the server replied with. It formats the output so it's easy to read.
+
+#### NOTE-4: The server has to be started in a different terminal before running the tests as specified below.
+
+#### NOTE-5: The compiled executables for the client and server are already present in the client and server folders. To compile again, simply run make in the root directory. This will run the Makefile.
+
+### To test the project:
+1) To test the project, first start the server program -> ``cd server`` -> ``./server``.
+2) In a different terminal shell, go to the tests directory -> ``cd tests``.
+3) Run the test.sh shell file -> ``./test.sh``.
+4) This should run all the specified tests for SFTP.
+
+### To start the project:
+1) Start two different terminal sessions.
+2) The project runs on port:8080, make sure it is free and available to use.
+3) Move to the server directory and run ./server in one of the terminals.
+	(cd server && ./server)
+4) In the other terminal session, run ./client from the client directory.
+	(cd client && ./client)
+5) Once the client and server connection is estalised, commands can be entered from the client.
 
 ## TEST OUTPUT
 <pre>
@@ -8,7 +111,7 @@ Simple File Transfer Protocol implementation in C
  ---id----|---acc----|---pass---- 
  --user1--|--u1acc1--|--pass123-- 
  --user2--|--u2acc1--|--pass123-- 
- --user2--|--u2acc1--|--pass123-- 
+ --user2--|--u2acc2--|--pass123-- 
  --user3--|---NULL---|---NULL---- 
  --user4--|--u4acc1--|---NULL---- 
  --user5--|---NULL---|--pass123-- 

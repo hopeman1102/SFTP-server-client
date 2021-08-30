@@ -4,7 +4,7 @@
  ---id----|---acc----|---pass---- 
  --user1--|--u1acc1--|--pass123-- 
  --user2--|--u2acc1--|--pass123-- 
- --user2--|--u2acc1--|--pass123-- 
+ --user2--|--u2acc2--|--pass123-- 
  --user3--|---NULL---|---NULL---- 
  --user4--|--u4acc1--|---NULL---- 
  --user5--|---NULL---|--pass123-- 

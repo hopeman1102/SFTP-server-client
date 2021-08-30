@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <ctype.h> 
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -118,6 +119,12 @@ int main(int argc, char *argv[])
         memset(buffer, 0, sizeof(buffer));
         fgets(message, BUFFER_SIZE, stdin);
         message[strcspn(message, "\n")] = 0; // removing the \n if exists
+        char *msg_tmp = message;
+        for (int i = 0; i < 4; i++)
+        {
+            *msg_tmp = toupper(*msg_tmp);
+            msg_tmp++;
+        }
         strncpy(temp, message, 4);
         temp[4] = 0;
         if (strcmp("STOR", temp) == 0)
