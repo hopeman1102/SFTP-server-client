@@ -146,6 +146,20 @@ temp1.txt	512 bytes
 
 ✔ Files in current directory listed with V mode
 
+Specifying subdir while using LIST with V mode
+Commands from client:
+USER user3
+LIST V dir1
+DONE
+Message from Server:
++CS725 SFTP Service
+!user3 logged in
++PS
+dir2.txt	23 bytes
+temp2.txt	23 bytes
+
+✔ Files in directory dir1 listed with V mode
+
 Changing directory using CDIR and listing
 Commands from client:
 USER user3

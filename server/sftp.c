@@ -29,11 +29,11 @@ bool is_file_present(char *file_name)
 		return false;
 }
 
-long int findSize(char *file_name)
+long int findSize(char *file_name, char *temp_dir)
 {
 	struct stat buffer;
 	char file_addr[BUFFER_SIZE] = {0};
-	sprintf(file_addr, "%s/%s", dir, file_name);
+	sprintf(file_addr, "%s/%s", temp_dir, file_name);
 
 	FILE *file = fopen(file_addr, "r");
 
@@ -53,7 +53,7 @@ void stor_file(int sockfd, int size)
 {
 	int n;
 	FILE *fp;
-	char file_addr[BUFFER_SIZE] = {0};
+	char file_addr[BUFFER_SIZE+10] = {0};
 	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 0)
 	{
 		sprintf(file_addr, "%s/_%s", dir, stor_state.file_name);
@@ -435,7 +435,7 @@ void kill(int client_fd, char *message, char *buffer)
 	}
 	else
 	{
-		char file_addr[HALF_BUFFER_SIZE] = {0};
+		char file_addr[BUFFER_SIZE+10] = {0};
 		sprintf(file_addr, "%s/%s", dir, file_name);
 		if (remove(file_addr) == 0)
 		{
@@ -461,14 +461,27 @@ void list(int client_fd, char *message, char *buffer)
 		return;
 	}
 
-	struct dirent *de;
-	char temp_dir[BUFFER_SIZE] = {0};
-	sprintf(temp_dir, "./%s", dir);
-	DIR *dr = opendir(temp_dir);
-	char temp_str[HALF_BUFFER_SIZE] = {0};
-
 	char *list_type = strtok(buffer, " ");
 	list_type = strtok(NULL, " ");
+
+	char *subdir;
+	subdir = strtok(NULL, " ");
+
+	struct dirent *de;
+	char temp_dir[BUFFER_SIZE] = {0};
+
+	if (subdir == NULL)
+	{
+		sprintf(temp_dir, "./%s", dir);
+	}
+	else
+	{
+		sprintf(temp_dir, "./%s/%s", dir, subdir);
+	}
+	
+	
+	DIR *dr = opendir(temp_dir);
+	char temp_str[HALF_BUFFER_SIZE] = {0};
 
 	if (list_type == NULL)
 	{
@@ -501,7 +514,7 @@ void list(int client_fd, char *message, char *buffer)
 			{
 				if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
 				{
-					long int file_size = findSize(de->d_name);
+					long int file_size = findSize(de->d_name, temp_dir);
 					printf("%s\n", de->d_name);
 					sprintf(temp_str, "%s\t%ld bytes\n", de->d_name, file_size);
 					strcat(message, temp_str);
@@ -610,8 +623,8 @@ void retr(int client_fd, char *message, char *buffer)
 	{
 		if (is_file_present(file_spec))
 		{
-			sprintf(message, "%ld", findSize(file_spec));
-			retr_file_size = findSize(file_spec);
+			sprintf(message, "%ld", findSize(file_spec, dir));
+			retr_file_size = findSize(file_spec, dir);
 			strcpy(retr_file_name, file_spec);
 		}
 		else

@@ -253,6 +253,20 @@ temp1.txt	512 bytes
 
 <b style="color:green">✔ Files in current directory listed with V mode</b>
 
+<b style="color:green">Specifying subdir while using LIST with V mode</b>
+<i style="color:green">Commands from client:</i>
+USER user3
+LIST V dir1
+DONE
+<i style="color:green">Message from Server:</i>
++CS725 SFTP Service
+!user3 logged in
++PS
+dir2.txt	23 bytes
+temp2.txt	23 bytes
+
+✔ Files in directory dir1 listed with V mode
+
 <b style="color:green">Changing directory using CDIR and listing</b>
 <i style="color:green">Commands from client:</i>
 USER user3
