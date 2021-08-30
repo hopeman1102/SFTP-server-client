@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include "global.h"
 
+// checks if the file is present in the current dir
 bool is_file_present(char *file_name)
 {
     struct stat buffer;
@@ -22,6 +23,7 @@ bool is_file_present(char *file_name)
         return false;
 }
 
+// sends the file to the server
 void send_file(FILE *fp, int sockfd, int size)
 {
     int n;
@@ -40,6 +42,7 @@ void send_file(FILE *fp, int sockfd, int size)
     }
 }
 
+// recieves the file from the server and saves in the dir
 void stor_file(int sockfd, int size, char *file_name)
 {
     int n;
@@ -174,6 +177,7 @@ int main(int argc, char *argv[])
             read(sock, buffer, 1024);
             printf("%s\n", buffer); // printing buffer here
 
+            // making temp_buffer as strncpy was altering its argument
             char temp_buffer[BUFFER_SIZE] = {0};
             strcpy(temp_buffer, buffer);
             char is_fine[2] = {0};
@@ -220,6 +224,7 @@ int main(int argc, char *argv[])
 
                 printf("%s\n", buffer); // printing buffer here
 
+                // making temp_buffer as strncpy was altering its argument
                 char temp_buffer[BUFFER_SIZE] = {0};
                 strcpy(temp_buffer, buffer);
                 char is_fine[2] = {0};
@@ -260,6 +265,8 @@ int main(int argc, char *argv[])
         memset(temp, 0, BUFFER_SIZE);
         strncpy(temp, message, 4);
         temp[4] = 0;
+
+        // closes the connection between client and server and closes the client program
         if (strcmp("DONE", temp) == 0 && strcmp("+", buffer) == 0)
         {
             if (close(sock) < 0)

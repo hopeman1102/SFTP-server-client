@@ -54,6 +54,8 @@ void stor_file(int sockfd, int size)
 	int n;
 	FILE *fp;
 	char file_addr[BUFFER_SIZE+10] = {0};
+
+	// checking if the file already exists, if so create a new version with '_' at the start
 	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 0)
 	{
 		sprintf(file_addr, "%s/_%s", dir, stor_state.file_name);
@@ -66,6 +68,7 @@ void stor_file(int sockfd, int size)
 	char buffer[stor_buffer_size + 1];
 	buffer[stor_buffer_size] = 0;
 
+	// checking for stor state. Whether to append or overwrite
 	if (is_file_present(stor_state.file_name) && stor_state.stor_type == 2)
 	{
 		fp = fopen(file_addr, "a");
@@ -139,6 +142,7 @@ void done(int client_fd, char *message, char *buffer, bool *is_closed)
 	reset_state();
 }
 
+// checks if password for a user is present
 bool is_pass_present(sqlite3 *db, sqlite3_stmt *stmt, char *user_id)
 {
 	char query[512];
@@ -157,6 +161,7 @@ bool is_pass_present(sqlite3 *db, sqlite3_stmt *stmt, char *user_id)
 	}
 }
 
+// checks if account for a user is present
 bool is_acct_present(sqlite3 *db, sqlite3_stmt *stmt, char *user_id)
 {
 	char query[512];
@@ -401,8 +406,6 @@ void size(int client_fd, char *message, char *buffer)
 	char *num_of_bytes_str = strtok(buffer, " ");
 	num_of_bytes_str = strtok(NULL, " ");
 	int num_of_bytes = atoi(num_of_bytes_str);
-
-	// add code for free space
 
 	strcpy(message, "+ok, waiting for file");
 	send(client_fd, message, strlen(message), 0);

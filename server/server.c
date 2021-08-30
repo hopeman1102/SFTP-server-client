@@ -158,6 +158,7 @@ int main(int argc, char *argv[])
             memset(buffer, 0, BUFFER_SIZE);
             memset(message, 0, BUFFER_SIZE);
         }
+        // clearing buffer and message strings
         memset(buffer, 0, BUFFER_SIZE);
         memset(message, 0, BUFFER_SIZE);
     }
