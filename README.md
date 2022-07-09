@@ -1,13 +1,5 @@
 # SFTP-in-C
-
-## COMPSYS725 Assignment 1: SFTP - RFC913
-
-### Submission
 This project implements the Simple File Transfer Protocol described in RFC 913 (https://tools.ietf.org/html/rfc913). This is completed in C, using Port 8080 as the default.
-
-Author: Harpreet Singh\
-UPI: hsin849\
-ID: 819582012
 
 **NOTE: When the client and server are running, the DONE command breaks the connection between the client and server. It also shuts down the client. The server keeps running and looks for new connections. As the server keeps running, a new client can connect to the server and utilise it. Upto 5 clients can form a queue and connect based on turn. If one client uses the DONE command, the next client in the queue would connect.** 
 
